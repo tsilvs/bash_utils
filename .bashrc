@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Imports
+
+. ./adb_utils.sh
+
 ## Utility Functions
 
 draw_hint() {
