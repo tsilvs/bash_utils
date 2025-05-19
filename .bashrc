@@ -3,6 +3,9 @@
 # Imports
 
 . ./adb_utils.sh
+. ./git_utils.sh
+. ./rpm_ostree_utils.sh
+. ./perl_utils.sh
 
 ## Utility Functions
 
@@ -11,11 +14,11 @@ draw_hint() {
 }
 
 find_mention_roots() {
-	find "$1" -mindepth 1 -maxdepth 1 -type d -exec sh -c 'grep -riq -- "$(basename "$(pwd)")" "$1" 2>/dev/null' _ {} \; -print
+	find "${1}" -mindepth 1 -maxdepth 1 -type d -exec sh -c 'grep -riq -- "$(basename "$(pwd)")" "$1" 2>/dev/null' _ {} \; -print
 }
 
 rot_search() {
-	rpm-ostree search "$1" | sort -u | grep -E -v "^="
+	rpm-ostree search "${1}" | sort -u | grep -E -v "^="
 }
 
 ## Aliases

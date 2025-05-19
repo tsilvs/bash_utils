@@ -14,11 +14,11 @@ adb_diff_apps() {
 adb_ifu() {
 	local device="${1}"; [[ -z "$device" ]] && { echo "Device ID (Serial or IP address) is required"; return 1; }
 	local u="${2:-0}"; [[ ! "$u" =~ ^[0-9]+$ ]] && { echo "User ID must be a number"; return 1; }
-	shift 2
-	local apps=("$@")
-	[[ ${#apps[@]} -eq 0 ]] && { echo "At least one app package name is required"; return 1; }
+	local argnum=2
+	shift ${argnum}
+	local apps=("$@"); [[ ${#apps[@]} -eq 0 ]] && { echo "At least one app package name is required"; return 1; }
 	for app in "${apps[@]}"; do
-		echo "Installing $app for user $u on device $device"
+		echo "Installing ${app} for user ${u} on device ${device}"
 		adb -s "${device}" shell cmd package install-existing --user "${u}" "${app}"
 	done
 }
