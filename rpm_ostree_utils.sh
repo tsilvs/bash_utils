@@ -1,5 +1,9 @@
 #!/bin/bash
 
+rot_search() {
+	rpm-ostree search "${1}" | sort -u | grep -E -v "^="
+}
+
 rot_id_booted() {
 	rpm-ostree status --json | jq -r '.deployments | to_entries[] | select(.value.booted).key'
 }
