@@ -33,6 +33,16 @@ rename.() {
 }
 
 ls.git() {
+	[[ " $* " =~ ' --help ' ]] && {
+		echo -e "Usage: ls.git
+Lists all dirs, marking git repos and showing 1st line of README.md
+	--help	Displays this help message"
+		return 0
+	}
+	(($# > 0)) && {
+		echo -e "Command accepts no arguments"
+		return 0
+	}
 	local color_QUT='\033[47;30m'
 	local color_GIT='\033[40;37m'
 	local color_NC='\033[0m'
