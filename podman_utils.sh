@@ -1,7 +1,7 @@
 #!/bin/bash
 
-podman_commit() {
-	[[ ( -z "$#" ) || ( " $* " =~ ' --help ' ) ]] && {
+podman.commit() {
+	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: podman_commit CONTAINER_NAME [IMAGE_NAME]
 Commit container to an image.

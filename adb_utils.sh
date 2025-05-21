@@ -1,6 +1,6 @@
 #!/bin/bash
 
-adb_diff_apps() {
+adb.diff.apps() {
 	local device="${1}"; [[ -z "$device" ]] && { echo "Device ID (Serial or IP address) is required"; return 1; }
 	local u1="${2:-0}"; [[ ! "$u1" =~ ^[0-9]+$ ]] && { echo "User 1 ID must be a number"; return 1; }
 	local u2="${3:-10}"; [[ ! "$u2" =~ ^[0-9]+$ ]] && { echo "User 2 ID must be a number"; return 1; }
@@ -11,7 +11,7 @@ adb_diff_apps() {
 		| sed 's/package://g'
 }
 
-adb_ifu() {
+adb.ifu() {
 	local device="${1}"; [[ -z "$device" ]] && { echo "Device ID (Serial or IP address) is required"; return 1; }
 	local u="${2:-0}"; [[ ! "$u" =~ ^[0-9]+$ ]] && { echo "User ID must be a number"; return 1; }
 	local argnum=2

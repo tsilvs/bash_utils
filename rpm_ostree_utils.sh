@@ -1,14 +1,14 @@
 #!/bin/bash
 
-rot_search() {
+rot.search() {
 	rpm-ostree search "${1}" | sort -u | grep -E -v "^="
 }
 
-rot_id_booted() {
+rot.id.booted() {
 	rpm-ostree status --json | jq -r '.deployments | to_entries[] | select(.value.booted).key'
 }
 
-rot_pl() {
+rot.pl() {
 	[[ " $* " =~ ' --help ' ]] && {
 		echo -e "Usage: rot_pl [DEPLOYMENT_INDEX]
 List packages from a specific deployment in rpm-ostree (default: index 0).
@@ -27,7 +27,7 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 	echo "$json_data" | jq -r --argjson idx "${depl}" '.deployments[$idx].packages[]?'
 }
 
-rot_pl_diff() {
+rot.pl.diff() {
 	local depl_old="${1:-1}"; [[ ! "${depl_old}" =~ ^[0-9]+$ ]] && { echo -e "Old Deployment index must be a number (got ${depl_old})"; return 1; }
 	local depl_new="${2:-$(rot_id_booted)}"; [[ ! "${depl_new}" =~ ^[0-9]+$ ]] && { echo -e "New Deployment index must be a number (got ${depl_new})"; return 1; }
 	diff -u <(rot_pl "${depl_old}") <(rot_pl "${depl_new}") | perl -ne 'print if /^[+-]/'
