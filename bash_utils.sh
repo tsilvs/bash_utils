@@ -77,7 +77,7 @@ Lists all dirs, marking git repos and showing 1st line of README.md
 	tabs $tab_stop
 }
 
-find_mention_roots() {
+find.mention.roots() {
 	find "${1}" -mindepth 1 -maxdepth 1 -type d -exec sh -c 'grep -riq -- "$(basename "$(pwd)")" "$1" 2>/dev/null' _ {} \; -print
 	return $?
 }
