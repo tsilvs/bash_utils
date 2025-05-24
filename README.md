@@ -16,7 +16,7 @@ bash_utils_install_clone() {
 	local install_dir_rel="\$(realpath \$(dirname \"\${BASH_SOURCE[0]}\"))/${author_name}/${project_name}"
 	mkdir -p "${install_dir}"
 	git clone "${git_remote}" "${install_dir}"
-	echo -e "for func_lib in ${install_dir}/*.sh; do
+	echo -e "for func_lib in ${install_dir_rel}/*.sh; do
 		source \"\${func_lib}\"
 	done" >> "${install_root}/source.import.${author_name}.${project_name}.sh"
 }
