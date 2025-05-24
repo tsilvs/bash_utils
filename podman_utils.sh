@@ -8,7 +8,7 @@ Commit container to an image.
 	--help	Show help";
 		return 0;
 	}
-	local container_name="${1}"; [[ -z "$container_name" ]] && { echo "Container Name is required"; return 1; }
+	local container_name="${1:?"Container Name is required"}"
 	local uname="$(id --user --name)"
 	local suffix="${uname}"
 	local image_name=${2:-"img_${container_name}_${suffix}"}

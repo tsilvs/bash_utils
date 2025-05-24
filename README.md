@@ -8,12 +8,12 @@
 
 ```sh
 bash_utils_install_clone() {
-	local install_root="${1}"; [[ -z "${install_root}" ]] && { echo "Installation directory is required"; return 1; }
-	local git_remote="${2}"; [[ -z "${git_remote}" ]] && { echo "Git remote is required"; return 1; }
+	local install_root="${1:?"Installation directory is required"}"
+	local git_remote="${2:?"Git remote is required"}"
 	local author_name="$(basename "$(dirname "${git_remote}")")"
 	local project_name="$(basename "${git_remote}" .git)"
 	local install_dir="${install_root}/${author_name}/${project_name}"
-	local install_dir_rel="$\(realpath $\(dirname \"$\{BASH_SOURCE[0]\}\"\)\)/${author_name}/${project_name}"
+	local install_dir_rel="\$(realpath \$(dirname \"\${BASH_SOURCE[0]}\"))/${author_name}/${project_name}"
 	mkdir -p "${install_dir}"
 	git clone "${git_remote}" "${install_dir}"
 	echo -e "for func_lib in ${install_dir}/*.sh; do

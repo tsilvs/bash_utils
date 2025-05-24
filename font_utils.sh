@@ -1,7 +1,7 @@
 #!/bin/bash
 
 font.name() {
-	local font_file="${1}"; [[ -z "${font_file}" ]] && { echo "Font file is required"; return 1; }
+	local font_file="${1:?"Font file is required"}"
 	fc-query -f '%{family}\n' "${font_file}"
 }
 
