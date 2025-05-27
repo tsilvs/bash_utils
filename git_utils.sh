@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# `_IV` variable suffix stands for `input validation`
+
 git.dir.check() {
 	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e "Usage: git.dir.check REPO_PATH
@@ -20,34 +22,36 @@ Extracts directory name from a git remote url.
 		return 0
 	}
 	local remote_address="${1:?"Remote address is required"}"
-	local project_name=$(basename "${remote_address}" .git)
-	local user_name=$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')
-	local target_dir="${user_name}/${project_name}"
+	#local author_name="$(basename "$(dirname "${remote_address}")")"
+	local author_name="$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
+	local project_name="$(basename "${remote_address}" .git)"
+	local target_dir="${author_name}/${project_name}"
 	echo -e "${target_dir}"
 }
 
 git.clone.to_dir() {
 	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: git.clone.to_dir REMOTE_URL REPO_DIR
+		echo -e "Usage: git.clone.to_dir REMOTE_URL [REPO_DIR]
 Clones a remote repo to a local dir.
 	--help	Displays this help message"
 		return 0
 	}
 	local remote_address="${1:?"Remote address is required"}"
-	local target_dir_input="${2:?"Target Dir is required"}"
-	local target_dir="$(realpath -m "${target_dir_input}")"
+	local target_dir_input="${2:-"$(git.url.to_dir "${remote_address}")"}"
+	local target_dir_IV="${target_dir_input:?"Target Dir is required"}"
+	local target_dir="$(realpath -m "${target_dir_IV}")"
 	mkdir -p "$target_dir"
 	git -C "$target_dir" clone "$remote_address" .
 }
 
 git.clone.list() {
 	[[ ($# -eq 0) || " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: git.clone.list LIST_FILE_PATH REPO_ROOT
+		echo -e "Usage: git.clone.list LIST_FILE_PATH [REPO_ROOT]
 Clones a list of remote repos to a local dir.
 	--help	Displays this help message"
 		return 0
 	}
-	local list_file_path="${1:?"List file is required"}"
+	local list_file_path="${1:?"List file path is required"}"
 	[[ -f "${list_file_path}" ]] || {
 		echo "List file does not exist"
 		return 1
@@ -62,6 +66,7 @@ Clones a list of remote repos to a local dir.
 		[[ -z "${remote}" ]] && continue
 		local target_dir="${repo_root}/$(git.url.to_dir "${remote}")"
 		git.dir.check "${target_dir}" && { echo "${target_dir} is a Git repo already"; continue; }
-		git.clone.to_dir "${remote}" "${target_dir}"
+		#git.clone.to_dir "${remote}" "${target_dir}"
+		git.clone.to_dir "${remote}"
 	done
 }
