@@ -26,3 +26,5 @@ Commit container to an image.
 
 	echo -e "${image_name}\t${image_id}"
 }
+
+#podman.images.all() {}

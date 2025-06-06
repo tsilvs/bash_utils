@@ -32,18 +32,26 @@ rot.pl() {
 List packages from a specific deployment in rpm-ostree (default: index 0).
 	--lskeys	List top level keys
 	--lsdeps	List deployment indexes
-	--lsdepsver	-//- with versions"
+	--lsdepsver	-//- with versions
+	"
+#	--ulo	User layered only
 		return 0
 	}
 	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
 	[[ " $* " =~ ' --lskeys ' ]] && { echo "${json_data}" | jq -r 'keys[]'; return 0; }
 	[[ " $* " =~ ' --lsdeps ' ]] && { echo "${json_data}" | jq -r '.deployments | keys[]'; return 0; }
 	[[ " $* " =~ ' --lsdepsver ' ]] && { echo "${json_data}" | jq -r '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
-	local depl="${1:-$(rot.id.booted)}"
+	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
+	local depl="${1:-$(rot.id.booted)}";
+	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
 	[[ ! "$depl" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
-	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
-	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
-	echo "$json_data" | jq -r --argjson idx "${depl}" '.deployments[$idx].packages[]?'
+	local deployment_count=$(echo "$json_data" | jq '.deployments | length'); [[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
+	local json_data_depl=$(echo "$json_data" | jq -r --argjson idx "${depl}" '.deployments[$idx]')
+	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
+	local pkg_full_list=""
+	pkg_full_list+=$(echo "$json_data_depl" | jq -r '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]')
+	pkg_full_list+=$(echo "$json_data_depl" | jq -r '.packages[]?')
+	echo "${pkg_full_list}" | sort -u
 }
 
 rot.pl.diff() {
@@ -59,6 +67,28 @@ rot.pl.diff.add() {
 rot.pl.diff.rem() {
 	rot_pl_diff "${1}" | grep -E "^\-" | tail -n+2 | sed 's/^[+-]//g'
 }
+
+#rot.copr.enable() {
+#	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
+#		echo -e "Usage: rot.copr.enable <copr_owner>/<copr_project>
+#Add a COPR repo.
+#	--help	Display this help."
+#	}
+#	local repo_path="${1:?"Repo path is required"}"
+#	(($# != 1)) && { echo -e "Command requires 1 argument"; return 0; }
+#	local owner="$(dirname "${1}")"
+#	local project="$(basename "${1}")"
+#	local fedora_version
+#	fedora_version=$(rpm -E %fedora)
+#	local repo_url="https://copr.fedorainfracloud.org/coprs/${owner}/${project}/repo/fedora-${fedora_version}/${owner}-${project}-fedora-${fedora_version}.repo"
+#	echo "${repo_url}"
+#	local repo_file="/etc/yum.repos.d/_copr:${owner}:${project}.repo"
+#	echo "${repo_file}"
+#	#sudo tee "$repo_file" > /dev/null <<EOF
+##$(curl -fsSL "$repo_url")
+##EOF
+#	#sudo rpm-ostree refresh-md
+#}
 
 # Wrap in $(cmd) for a bash array / space separated list
 # To reinstall missing:
