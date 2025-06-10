@@ -7,5 +7,20 @@
 docker.image.env() {
 	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
 	local image_name="${1:?"Image name required"}"
-	sudo docker image inspect --format json "${image_name}" | jq -r '.[].Config.Env[]'
+	sudo docker image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
 }
+
+docker.user.group.add() {
+	sudo usermod -aG docker $(id -un)
+}
+
+# docker info | grep 'Docker Root Dir:' | cut -d':' -f2 | sed 's/^ *//g'
+
+# container_id=$(docker ps -a --no-trunc | grep <container_name> | awk '{print $1}')
+# echo "Container ID: $container_id"
+# echo "Container storage: /var/lib/docker/containers/$container_id"
+
+# image_id=$(docker images --no-trunc | grep <image_name> | awk '{print $3}')
+# echo "Image ID: $image_id"
+# echo "Image metadata: /var/lib/docker/image/overlay2/imagedb/content/$image_id"
+

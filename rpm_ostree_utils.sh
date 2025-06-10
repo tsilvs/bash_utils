@@ -10,7 +10,7 @@ rot.search() {
 
 rot.id.booted() {
 	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: rot.id.booted [OPTIONS]
+		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS]
 Get information about the currently booted deployment.
 	--version	Show deployment index and version
 	--version-only	Show only the version string"
@@ -19,8 +19,8 @@ Get information about the currently booted deployment.
 	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
 	local deployments=$(echo "$json_data" | jq '.deployments')
 	local booted_deployment_entries=$(echo "$deployments" | jq '. | to_entries[] | select(.value.booted)')
-	local booted_index=$(echo "$booted_deployment_entries" | jq -r '.key')
-	local booted_version=$(echo "$booted_deployment_entries" | jq -r '.value.version')
+	local booted_index=$(echo "$booted_deployment_entries" | jq --raw-output '.key')
+	local booted_version=$(echo "$booted_deployment_entries" | jq --raw-output '.value.version')
 	[[ " $* " =~ ' --version-only ' ]] && { echo -e "${booted_version}"; return 0; }
 	[[ " $* " =~ ' --version ' ]] && { echo -e "${booted_index}\t${booted_version}"; return 0; }
 	echo -e "${booted_index}"
@@ -28,7 +28,7 @@ Get information about the currently booted deployment.
 
 rot.pl() {
 	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: rot.pl [DEPLOYMENT_INDEX]
+		echo -e "Usage: ${FUNCNAME[0]} [DEPLOYMENT_INDEX]
 List packages from a specific deployment in rpm-ostree (default: index 0).
 	--lskeys	List top level keys
 	--lsdeps	List deployment indexes
@@ -38,19 +38,19 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 		return 0
 	}
 	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	[[ " $* " =~ ' --lskeys ' ]] && { echo "${json_data}" | jq -r 'keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdeps ' ]] && { echo "${json_data}" | jq -r '.deployments | keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdepsver ' ]] && { echo "${json_data}" | jq -r '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
+	[[ " $* " =~ ' --lskeys ' ]] && { echo "${json_data}" | jq --raw-output 'keys[]'; return 0; }
+	[[ " $* " =~ ' --lsdeps ' ]] && { echo "${json_data}" | jq --raw-output '.deployments | keys[]'; return 0; }
+	[[ " $* " =~ ' --lsdepsver ' ]] && { echo "${json_data}" | jq --raw-output '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
 	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
 	local depl="${1:-$(rot.id.booted)}";
 	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
 	[[ ! "$depl" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
 	local deployment_count=$(echo "$json_data" | jq '.deployments | length'); [[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
-	local json_data_depl=$(echo "$json_data" | jq -r --argjson idx "${depl}" '.deployments[$idx]')
+	local json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
 	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
 	local pkg_full_list=""
-	pkg_full_list+=$(echo "$json_data_depl" | jq -r '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]')
-	pkg_full_list+=$(echo "$json_data_depl" | jq -r '.packages[]?')
+	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]')
+	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.packages[]?')
 	echo "${pkg_full_list}" | sort -u
 }
 
@@ -70,7 +70,7 @@ rot.pl.diff.rem() {
 
 #rot.copr.enable() {
 #	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-#		echo -e "Usage: rot.copr.enable <copr_owner>/<copr_project>
+#		echo -e "Usage: ${FUNCNAME[0]} <copr_owner>/<copr_project>
 #Add a COPR repo.
 #	--help	Display this help."
 #	}

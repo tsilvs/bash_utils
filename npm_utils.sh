@@ -7,7 +7,7 @@ npm.search() {
 		--no-description \
 		--json "${query}" \
 		| \
-		jq -r ".[] | \"${template}\"" \
+		jq --raw-output ".[] | \"${template}\"" \
 		| \
 		sort \
 			--ignore-case \
