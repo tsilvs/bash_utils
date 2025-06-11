@@ -11,7 +11,11 @@ docker.image.env() {
 }
 
 docker.user.group.add() {
-	sudo usermod -aG docker $(id -un)
+	sudo usermod -aG docker $(id --user --name)
+}
+
+docker.root.dir() {
+	echo "$(docker info --format json | jq -r '.DockerRootDir')"
 }
 
 # docker info | grep 'Docker Root Dir:' | cut -d':' -f2 | sed 's/^ *//g'
