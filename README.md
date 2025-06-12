@@ -10,8 +10,7 @@
 bash_utils_install_clone() {
 	local install_root="${1:?"Installation directory is required"}"
 	local git_remote="${2:?"Git remote is required"}"
-	#local author_name="$(basename "$(dirname "${git_remote}")")"
-	local author_name="$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
+	local author_name="$(echo "${git_remote}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
 	local project_name="$(basename "${git_remote}" .git)"
 	local install_dir="${install_root}/${author_name}/${project_name}"
 	local install_dir_rel="\$(realpath \$(dirname \"\${BASH_SOURCE[0]}\"))/${author_name}/${project_name}"
@@ -25,10 +24,12 @@ bash_utils_install_clone() {
 
 ## Pick scope path
 
-| User scope    | For all sessions | For interactive sessions |
-|---------------|------------------|--------------------------|
-| System-wide   | `/etc/profile.d` | `/etc/bashrc.d`          |
-| User-specific | `~/.profile.d`   | `~/.bashrc.d`            |
+| User scope    | For all sessions  | For interactive sessions |
+|---------------|-------------------|--------------------------|
+| System-wide   | `/etc/profile.d/` | `/etc/bashrc.d/`         |
+| User-specific | `~/.profile.d/`   | `~/.bashrc.d/`           |
+
+Add `for f in $scope/*.sh; do source $f; done` to the default sourced file (e.g. `/etc/bashrc`).
 
 ## Install
 

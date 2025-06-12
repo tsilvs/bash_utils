@@ -21,15 +21,9 @@ Commit container to an image.
 		--squash \
 		"${container_name}" \
 		"${image_name}")
-
 	#	--iidfile ${image_id_file_path} \
-
 	echo -e "${image_name}\t${image_id}"
 }
-
-#podman.images.all() {}
-	#echo ${a_path#*/var}
-	#jq --raw-output
 
 podman.root.dir() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
@@ -127,6 +121,9 @@ podman.img.conf() {
 		echo -e \
 "Usage: ${FUNCNAME[0]} IMG_NAME
 Show image config for current context.
+Params:
+	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+Options:
 	--help	Show help";
 		return 0;
 	}
@@ -139,6 +136,9 @@ podman.img.id() {
 		echo -e \
 "Usage: ${FUNCNAME[0]} IMG_NAME
 Show image ID for current context.
+Params:
+	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+Options:
 	--help	Show help";
 		return 0;
 	}
@@ -158,6 +158,21 @@ Show image location for current context.
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
 }
 
+podman.img.mv.root() {
+	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+		echo -e \
+"Usage: ${FUNCNAME[0]} IMG_NAME
+Move image to root.
+Params:
+	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+Options:
+	--help	Show help";
+		return 0;
+	}
+	local img_name="${1:?"Image Name is required"}"
+	podman save "${img_name}" | sudo podman load
+}
+
 podman.conf.path() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
@@ -171,9 +186,9 @@ Show config location for current context.
 	echo "${podman_path_config}"
 }
 
-podman.conf.merge() {
-	local conf_path_1="${1:?"Config 1 path is required"}"
-	local conf_path_2="${2:?"Config 2 path is required"}"
-	local merged_conf=""
-	echo "${merged_conf}"
-}
+# podman.conf.merge() {
+# 	local conf_path_1="${1:?"Config 1 path is required"}"
+# 	local conf_path_2="${2:?"Config 2 path is required"}"
+# 	local merged_conf=""
+# 	echo "${merged_conf}"
+# }
