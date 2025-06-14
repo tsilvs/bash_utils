@@ -2,7 +2,8 @@
 
 alias rot='rpm-ostree'
 
-alias rot_i='rpm-ostree install --apply-live -y'
+alias rot_i='rpm-ostree install --idempotent --apply-live --assumeyes'
+alias rot_u='rpm-ostree uninstall --idempotent --assumeyes'
 
 rot.search() {
 	rpm-ostree search "${1}" | sort -u | grep -E -v "^="

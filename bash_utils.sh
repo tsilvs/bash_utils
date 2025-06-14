@@ -11,22 +11,27 @@ ls.() {
 	ls --color --group-directories-first "$@"
 	return $?
 }
+
 lsd.() {
 	lsd -1 -A -G -X --color always --group-dirs first -l -g "$@"
 	return $?
 }
+
 eza.() {
 	eza -1AlF --color=always --icons=always --group-directories-first --smart-group --git-repos "$@"
 	return $?
 }
+
 md.() {
 	mkdir "$@"
 	return $?
 }
+
 tree.() {
 	tree --dirsfirst "$@"
 	return $?
 }
+
 rename.() {
 	prename "$@"
 	return $?
@@ -80,4 +85,49 @@ Lists all dirs, marking git repos and showing 1st line of README.md
 find.mention.roots() {
 	find "${1}" -mindepth 1 -maxdepth 1 -type d -exec sh -c 'grep -riq -- "$(basename "$(pwd)")" "$1" 2>/dev/null' _ {} \; -print
 	return $?
+}
+
+commands() {
+# Prints all loaded aliases, commands & functions
+	compgen \
+		-a \
+		-C \
+		-F
+
+# compgen options
+#	A: action
+#	o: option
+#	C: command
+#	F: function
+
+# Patterns
+#	G: globpat
+#	P: prefix
+#	S: suffix
+#	X: filterpat
+#	W: wordlist
+
+# Users
+#	g: groups
+#	u: user names
+
+# Files
+#	d: directories
+#	f: files
+
+# Built-in
+#	b: shell builtins
+#	k: shell reserved words
+
+# Variables
+#	e: exported shell variables
+#	v: shell variables
+
+# Background processes
+#	j: jobs
+#	s: services
+
+# Commands
+#	a: aliases
+#	c: all commands (aliases, builtins, functions, executables)
 }
