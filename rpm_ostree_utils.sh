@@ -78,10 +78,8 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 	local depl_pkg_layered
 	(( !opt_ulo || opt_all )) && { depl_pkg_builtin=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]'); return 0; }
 	(( opt_ulo )) && { depl_pkg_layered=$(echo "$json_data_depl" | jq --raw-output '.packages[]?'); return 0; }
-	{
-		echo -e "Packages: ${depl_pkg_builtin}"
-		echo -e "Packages: ${depl_pkg_layered}"
-	} | sort -u
+	local pkg_full_list=depl_pkg_builtin+depl_pkg_layered
+	echo "${pkg_full_list}" | sort -u
 }
 
 rot.pl.diff() {
