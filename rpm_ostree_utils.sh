@@ -28,31 +28,63 @@ Get information about the currently booted deployment.
 }
 
 rot.pl() {
-	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} [DEPLOYMENT_INDEX]
+	usage() {
+		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
 List packages from a specific deployment in rpm-ostree (default: index 0).
-	--lskeys	List top level keys
-	--lsdeps	List deployment indexes
-	--lsdepsver	-//- with versions
-	"
-#	--ulo	User layered only
-		return 0
+--lskeys	List top level keys
+--lsdeps	List deployment indexes
+--lsdepsver	List deployment indexes with versions
+--ulo	User layered only
+--all	All packages
+--help	Show this help
+"
 	}
-	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	[[ " $* " =~ ' --lskeys ' ]] && { echo "${json_data}" | jq --raw-output 'keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdeps ' ]] && { echo "${json_data}" | jq --raw-output '.deployments | keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdepsver ' ]] && { echo "${json_data}" | jq --raw-output '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
-	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
-	local depl="${1:-$(rot.id.booted)}";
-	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
+	local \
+		opt_lskeys=0 \
+		opt_lsdeps=0 \
+		opt_lsdepsver=0 \
+		opt_ulo=0 \
+		opt_all=0
+	while getopts ":h-:" opt; do
+		case "$opt" in
+			h) usage; return 0 ;;
+			-) case "${OPTARG}" in
+				help) usage; return 0 ;;
+				lskeys) opt_lskeys=1 ;;
+				lsdeps) opt_lsdeps=1 ;;
+				lsdepsver) opt_lsdepsver=1 ;;
+				ulo) opt_ulo=1 ;;
+				all) opt_all=1 ;;
+				*) echo "Unknown option --${OPTARG}" >&2; return 1 ;;
+			   esac
+			   ;;
+			\?) echo "Unknown option -$OPTARG" >&2; return 1 ;;
+		esac
+	done
+	shift $((OPTIND - 1))
+	local \
+		json_data \
+		depl \
+		deployment_count \
+		json_data_depl
+	json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
+	(( opt_lskeys )) && { echo "${json_data}" | jq --raw-output 'keys[]'; return 0; }
+	(( opt_lsdeps )) && { echo "${json_data}" | jq --raw-output '.deployments | keys[]'; return 0; }
+	(( opt_lsdepsver )) && { echo "${json_data}" | jq --raw-output '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
+	depl="${1:-$(rot.id.booted)}"
 	[[ ! "$depl" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
-	local deployment_count=$(echo "$json_data" | jq '.deployments | length'); [[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
-	local json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
-	#( ! [[ " $* " =~ ' --ulo ' ]] ) &&
-	local pkg_full_list=""
-	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]')
-	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.packages[]?')
-	echo "${pkg_full_list}" | sort -u
+	deployment_count=$(echo "$json_data" | jq '.deployments | length')
+	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
+	json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
+	local \
+		depl_pkg_builtin="" \
+		depl_pkg_layered=""
+	(( opt_ulo )) && { depl_pkg_layered=$(echo "$json_data_depl" | jq --raw-output '.packages[]?'); return 0; }
+	(( !opt_ulo || opt_all )) && { depl_pkg_builtin=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]'); return 0; }
+	{
+		echo "${depl_pkg_builtin}"
+		echo "${depl_pkg_layered}"
+	} | sort -u
 }
 
 rot.pl.diff() {
