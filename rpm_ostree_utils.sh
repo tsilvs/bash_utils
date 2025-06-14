@@ -39,12 +39,11 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 --help	Show this help
 "
 	}
-	local \
-		opt_lskeys=0 \
-		opt_lsdeps=0 \
-		opt_lsdepsver=0 \
-		opt_ulo=0 \
-		opt_all=0
+	local opt_lskeys=0
+	local opt_lsdeps=0
+	local opt_lsdepsver=0
+	local opt_ulo=0
+	local opt_all=0
 	while getopts ":h-:" opt; do
 		case "$opt" in
 			h) usage; return 0 ;;
@@ -62,11 +61,10 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 		esac
 	done
 	shift $((OPTIND - 1))
-	local \
-		json_data \
-		depl \
-		deployment_count \
-		json_data_depl
+	local json_data
+	local depl
+	local deployment_count
+	local json_data_depl
 	json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
 	(( opt_lskeys )) && { echo "${json_data}" | jq --raw-output 'keys[]'; return 0; }
 	(( opt_lsdeps )) && { echo "${json_data}" | jq --raw-output '.deployments | keys[]'; return 0; }
@@ -76,11 +74,10 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 	deployment_count=$(echo "$json_data" | jq '.deployments | length')
 	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total deployments: $deployment_count)" >&2; return 1; }
 	json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
-	local \
-		depl_pkg_builtin="" \
-		depl_pkg_layered=""
-	(( opt_ulo )) && { depl_pkg_layered=$(echo "$json_data_depl" | jq --raw-output '.packages[]?'); return 0; }
+	local depl_pkg_builtin
+	local depl_pkg_layered
 	(( !opt_ulo || opt_all )) && { depl_pkg_builtin=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]'); return 0; }
+	(( opt_ulo )) && { depl_pkg_layered=$(echo "$json_data_depl" | jq --raw-output '.packages[]?'); return 0; }
 	{
 		echo -e "Packages: ${depl_pkg_builtin}"
 		echo -e "Packages: ${depl_pkg_layered}"
