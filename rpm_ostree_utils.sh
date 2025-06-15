@@ -5,6 +5,28 @@ alias rot='rpm-ostree'
 alias rot_i='rpm-ostree install --idempotent --apply-live --assumeyes'
 alias rot_u='rpm-ostree uninstall --idempotent --assumeyes'
 
+rot.repos.list() {
+	[[ " $* " =~ ' --help ' ]] && {
+		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
+List repos in a deployment (default index: 0).
+	--help	Show this help
+"
+		return 0
+	}
+	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
+	local depl="${1:-$(rot.id.booted)}"
+	[[ ! "${depl}" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
+	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
+	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2; return 1; }
+	local json_data_depl=$(echo "$json_data" | jq --argjson idx "${depl}" '.deployments[$idx]')
+	local repos=$(echo "${json_data_depl}" | jq --raw-output '.["layered-commit-meta"].["rpmostree.rpmmd-repos"][].["id"]' | sort -u)
+	echo "${repos}"
+}
+
+#rot.repo.url() {
+#
+#}
+
 rot.search() {
 	rpm-ostree search "${1}" | sort -u | grep -E -v "^="
 }
@@ -64,15 +86,15 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 rot.pl.diff() {
 	local depl_old="${1:-1}"; [[ ! "${depl_old}" =~ ^[0-9]+$ ]] && { echo -e "Old Deployment index must be a number (got ${depl_old})"; return 1; }
 	local depl_new="${2:-$(rot.id.booted)}"; [[ ! "${depl_new}" =~ ^[0-9]+$ ]] && { echo -e "New Deployment index must be a number (got ${depl_new})"; return 1; }
-	diff -u <(rot_pl "${depl_old}") <(rot_pl "${depl_new}") | perl -ne 'print if /^[+-]/'
+	diff -u <(rot.pl "${depl_old}") <(rot.pl "${depl_new}") | perl -ne 'print if /^[+-]/'
 }
 
 rot.pl.diff.add() {
-	rot_pl_diff "${1}" | grep -E "^\+" | tail -n+2 | sed 's/^[+-]//g'
+	rot.pl.diff "${1}" | grep -E "^\+" | tail -n+2 | sed 's/^[+-]//g'
 }
 
 rot.pl.diff.rem() {
-	rot_pl_diff "${1}" | grep -E "^\-" | tail -n+2 | sed 's/^[+-]//g'
+	rot.pl.diff "${1}" | grep -E "^\-" | tail -n+2 | sed 's/^[+-]//g'
 }
 
 #rot.copr.enable() {
