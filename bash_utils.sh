@@ -89,10 +89,7 @@ find.mention.roots() {
 
 commands() {
 # Prints all loaded aliases, commands & functions
-	compgen \
-		-a \
-		-C \
-		-F
+	compgen -c
 
 # compgen options
 #	A: action

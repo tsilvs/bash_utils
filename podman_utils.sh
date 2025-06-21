@@ -36,38 +36,44 @@ Show container location for current context.
 	podman info | yq '.store.graphRoot'
 }
 
-podman.conts.conf.path() {
+podman.conts.manif.path() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]}
-Show container config path for current context.
+Show containers manifest path for current context.
 	--help	Show help";
 		return 0;
 	}
 	echo "$(podman.root.dir)/overlay-containers/containers.json"
 }
 
-podman.conts.conf() {
+podman.conts.manif() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]}
-Show container config for current context.
+Show containers manifest for current context.
 	--help	Show help";
 		return 0;
 	}
-	echo "$(jq --raw-input 'fromjson' "$(podman.conts.conf.path)")"
+	echo "$(jq --raw-input 'fromjson' "$(podman.conts.manif.path)")"
 }
 
-podman.cont.conf() {
+podman.cont.manif() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]} CONTAINER_NAME
-Show container config for current context.
+Show container manifest for current context.
 	--help	Show help";
 		return 0;
 	}
 	local container_name="${1:?"Container Name is required"}"
-	podman.conts.conf | jq --arg name "${container_name}" '.[] | select(.names[0] == $name)'
+	podman.conts.manif | jq --arg name "${container_name}" '.[] | select(.names[0] == $name)'
+}
+
+podman.cont.conf() {
+	local container_name="${1:?"Container Name is required"}"
+	podman container inspect "${container_name}" --format json | jq -r '.[0]'
+	# | jq -r '.[0].Mounts[]'
 }
 
 podman.cont.id() {
@@ -79,7 +85,7 @@ Show container ID for current context.
 		return 0;
 	}
 	local container_name="${1:?"Container Name is required"}"
-	podman.cont.conf "${container_name}" | jq --raw-output '.id'
+	podman.cont.manif "${container_name}" | jq --raw-output '.id'
 }
 
 podman.cont.dir() {
@@ -94,33 +100,33 @@ Show container location for current context.
 	echo "$(podman.root.dir)/overlay-containers/$(podman.cont.id "${container_name}")"
 }
 
-podman.imgs.conf.path() {
+podman.imgs.manif.path() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]}
-Show image config path for current context.
+Show images manifest path for current context.
 	--help	Show help";
 		return 0;
 	}
 	echo "$(podman.root.dir)/overlay-images/images.json"
 }
 
-podman.imgs.conf() {
+podman.imgs.manif() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]}
-Show image config for current context.
+Show images manifest for current context.
 	--help	Show help";
 		return 0;
 	}
-	echo "$(jq --raw-input 'fromjson' "$(podman.imgs.conf.path)")"
+	echo "$(jq --raw-input 'fromjson' "$(podman.imgs.manif.path)")"
 }
 
-podman.img.conf() {
+podman.img.manif() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
 "Usage: ${FUNCNAME[0]} IMG_NAME
-Show image config for current context.
+Show image manifest for current context.
 Params:
 	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
 Options:
@@ -128,7 +134,11 @@ Options:
 		return 0;
 	}
 	local img_name="${1:?"Image Name is required"}"
-	podman.imgs.conf | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
+	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
+}
+
+podman.img.conf() {
+
 }
 
 podman.img.id() {
@@ -143,7 +153,7 @@ Options:
 		return 0;
 	}
 	local img_name="${1:?"Image Name is required"}"
-	podman.img.conf "${img_name}" | jq --raw-output '.id'
+	podman.img.manif "${img_name}" | jq --raw-output '.id'
 }
 
 podman.img.dir() {
@@ -156,6 +166,19 @@ Show image location for current context.
 	}
 	local image_name="${1:?"Image Name is required"}"
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
+}
+
+podman.img.env() {
+	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+		echo -e \
+"Usage: ${FUNCNAME[0]} IMG_NAME
+Show image internal environment for current context.
+	--help	Show help";
+		return 0;
+	}
+	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
+	local image_name="${1:?"Image name required"}"
+	sudo docker image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
 }
 
 podman.img.mv.root() {

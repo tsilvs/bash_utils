@@ -70,3 +70,35 @@ Clones a list of remote repos to a local dir.
 		git.clone.to_dir "${remote}"
 	done
 }
+
+# license.get() {
+# 	local license_code
+# 	local license_tpl_path
+# }
+
+# coc.get() {
+# 	local coc_code
+# 	local coc_tpl_path
+# }
+
+# readme.get() {
+# 	local readme_tpl_path
+# }
+
+# example_struct="
+# ./
+# 	lib/
+# 	src/
+# 	.gitignore
+# 	CODE_OF_CONDUCT.md
+# 	LICENSE.md
+# 	README.md
+# "
+
+# fs.tree.spawn() {
+# 	local struct
+# }
+
+# git.init.proj() {
+# 	fs.tree.spawn struct
+# }

@@ -18,3 +18,9 @@
 #
 #	rm -f "$tmpfile"*
 #}
+
+#chrome.fonts.merge() {}
+
+#chrome.ext.merge() {}
+
+#chrome.ext.conf.merge() {}

@@ -5,6 +5,42 @@ alias rot='rpm-ostree'
 alias rot_i='rpm-ostree install --idempotent --apply-live --assumeyes'
 alias rot_u='rpm-ostree uninstall --idempotent --assumeyes'
 
+rot.search() {
+	rpm-ostree search "${1}" | sort -u | perl -ne 'print if /^[^=]/'
+}
+
+rot.booted() {
+	#TODO: FIX!!!
+	[[ " $* " =~ ' --help ' ]] && {
+		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [properties]
+Get information about the currently booted deployment.
+	--index	print deployment index
+"
+		return 0
+	}
+	local json_data=$(rpm-ostree status --json) || { echo "Error: Failed to get rpm-ostree status" >&2; return 1; }
+	local deployments=$(echo "$json_data" | jq '.deployments')
+	[[ " $* " =~ ' --index ' ]] && {
+		local booted_index=$(echo "$deployments" | jq 'to_entries[] | select(.value.booted) | .key') || { echo "Error: Failed to get booted index" >&2; return 1; }
+		shift 1
+		echo "$booted_index"
+		return 0
+	}
+	local booted_deployment=$(echo "$deployments" | jq '.[] | select(.booted)') || { echo "Error: Failed to get booted deployment data" >&2; return 1; }
+	local props=($@)
+	[[ ${#props[@]} -eq 0 ]] && { echo "$booted_deployment"; return 0; }
+	for prop in "${props[@]}"; do
+		echo -e "$prop:\t$(echo "$booted_deployment" | jq --raw-output ".${prop}")"
+	done
+}
+
+# rot.booted.dir() {
+# 	local depl_booted_serial="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .serial')"
+# 	local depl_booted_checksum="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .checksum')"
+# 	local depl_booted_osname="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .osname')"
+# 	local depl_booted_root_dir_path="/ostree/deploy/${depl_booted_osname}/deploy/${depl_booted_checksum}.${depl_booted_serial}"
+# }
+
 rot.repos.list() {
 	[[ " $* " =~ ' --help ' ]] && {
 		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
@@ -14,7 +50,7 @@ List repos in a deployment (default index: 0).
 		return 0
 	}
 	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	local depl="${1:-$(rot.id.booted)}"
+	local depl="${1:-$(rot.booted --index)}"
 	[[ ! "${depl}" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
 	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
 	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2; return 1; }
@@ -26,28 +62,6 @@ List repos in a deployment (default index: 0).
 #rot.repo.url() {
 #
 #}
-
-rot.search() {
-	rpm-ostree search "${1}" | sort -u | grep -E -v "^="
-}
-
-rot.id.booted() {
-	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS]
-Get information about the currently booted deployment.
-	--version	Show deployment index and version
-	--version-only	Show only the version string"
-		return 0
-	}
-	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	local deployments=$(echo "$json_data" | jq '.deployments')
-	local booted_deployment_entries=$(echo "$deployments" | jq '. | to_entries[] | select(.value.booted)')
-	local booted_index=$(echo "$booted_deployment_entries" | jq --raw-output '.key')
-	local booted_version=$(echo "$booted_deployment_entries" | jq --raw-output '.value.version')
-	[[ " $* " =~ ' --version-only ' ]] && { echo -e "${booted_version}"; return 0; }
-	[[ " $* " =~ ' --version ' ]] && { echo -e "${booted_index}\t${booted_version}"; return 0; }
-	echo -e "${booted_index}"
-}
 
 rot.pl() {
 	[[ " $* " =~ ' --help ' ]] && {
@@ -72,7 +86,7 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 	[[ " $* " =~ ' --ulo ' ]] && { shift 1; opt_ulo=1; }
 	[[ " $* " =~ ' --all ' ]] && { shift 1; opt_all=1; }
 	#(($# > 0)) && shift $(( $# - 1 ))
-	local depl="${1:-$(rot.id.booted)}"
+	local depl="${1:-$(rot.booted --index)}"
 	[[ ! "${depl}" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
 	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
 	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2; return 1; }
@@ -85,7 +99,7 @@ List packages from a specific deployment in rpm-ostree (default: index 0).
 
 rot.pl.diff() {
 	local depl_old="${1:-1}"; [[ ! "${depl_old}" =~ ^[0-9]+$ ]] && { echo -e "Old Deployment index must be a number (got ${depl_old})"; return 1; }
-	local depl_new="${2:-$(rot.id.booted)}"; [[ ! "${depl_new}" =~ ^[0-9]+$ ]] && { echo -e "New Deployment index must be a number (got ${depl_new})"; return 1; }
+	local depl_new="${2:-$(rot.booted --index)}"; [[ ! "${depl_new}" =~ ^[0-9]+$ ]] && { echo -e "New Deployment index must be a number (got ${depl_new})"; return 1; }
 	diff -u <(rot.pl "${depl_old}") <(rot.pl "${depl_new}") | perl -ne 'print if /^[+-]/'
 }
 

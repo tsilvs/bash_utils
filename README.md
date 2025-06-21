@@ -1,6 +1,23 @@
+> [!IMPORTANT]
+> I am spread too thin between all of my projects, so if you can support my efforts or wish to contribute - please contact me.
+>
+> My username here is almost the same on most popular online social platforms.
+
 # Bash Utility Functions Library
 
+A collection of pre-made commands reducing cognitive load on the user.
+
+Can be useful for active `rpm-ostree`, `podman`, `distrobox` & `adb` users.
+
+> [!NOTE]
 > Intended for `source` (or `.`).
+
+> [!WARNING]
+> Use this code at your own risk, it was not well-tested!
+>
+> I am a solo developer with little resources so I can't guarantee smooth operation.
+>
+> I am writing these scripts to be stable to the best of my abilities and knowledge.
 
 # Installation
 
@@ -22,17 +39,34 @@ bash_utils_install_clone() {
 }
 ```
 
+> [!TIP]
+> If you wish to keep your system de-cluttered, I recommend installing these scripts to a shared location.
+
+> [!CAUTION]
+> Be careful with elevated privileges execution and important system files editing!
+
 ## Pick scope path
 
-| User scope    | For all sessions  | For interactive sessions |
-|---------------|-------------------|--------------------------|
-| System-wide   | `/etc/profile.d/` | `/etc/bashrc.d/`         |
-| User-specific | `~/.profile.d/`   | `~/.bashrc.d/`           |
+| User scope    | For login sessions | For interactive sessions |
+|---------------|--------------------|--------------------------|
+| System-wide   | `/etc/profile.d/`  | `/etc/bashrc.d/`         |
+| User-specific | `~/.profile.d/`    | `~/.bashrc.d/`           |
 
-Add `for f in $scope/*.sh; do source $f; done` to the default sourced file (e.g. `/etc/bashrc`).
+Edit & add `for f in $scope/*.sh; do source $f; done` to the default sourced file (e.g. `/etc/bashrc`).
 
 ## Install
 
 ```sh
 sudo bash_utils_install_clone "${scope_path}" git@github.com:tsilvs/bash_utils.git
 ```
+
+# Plans
+
++ [ ] Proper i18n with separate locale files
++ [ ] Rewrite with any `bash` scripting library (e.g. `aks/bash-lib`?) or pre-processor (e.g. `TypeShell`?) for better stability, reliability and maintainability
++ [ ] UI with `yad`
++ [ ] Proper packaging with `.rpm`, `.deb`, `pkgbuild`, `flatpak`, `bpkg`, `podman` image or any other suitable packaging tool
++ [ ] Programming language rewrite?
+	+ [ ] Interpreted (Ruby, TypeScript, Python)?
+	+ [ ] Compiled (Zig, Rust, Crystal, Go, Kotlin, Haskell)?
+	+ [ ] any other that's well integrated with Linux ecosystem?
