@@ -1,0 +1,46 @@
+{
+  "name": "example-project",
+  "description": "A sample project",
+  "homepage": "https://example.com",
+  "visibility": "private", // "private", "internal", "public"
+  "topics": ["topic1", "topic2"],
+  "default_branch": "main",
+  "is_template": false,
+  "has_projects": true,
+  "has_issues": true, //"issues_enabled": true,
+  "has_wiki": true, // "wiki_enabled": true,
+  "initialize_with_readme": true,
+  "merge_requests_enabled": true,
+  "jobs_enabled": true,
+  "snippets_enabled": true,
+  "container_registry_enabled": true,
+  "shared_runners_enabled": true,
+  "public_jobs": false,
+  "only_allow_merge_if_pipeline_succeeds": false,
+  "only_allow_merge_if_all_discussions_are_resolved": false,
+  "request_access_enabled": true,
+  "printing_merge_request_link_enabled": false,
+  "merge_method": "merge", // "merge", "rebase_merge", "ff"
+  "approvals_before_merge": 1,
+  "ci_config_path": ".gitlab-ci.yml",
+  "auto_cancel_pending_pipelines": "enabled", // "enabled", "disabled"
+  "build_timeout": 3600,
+  "namespace_id": 123456,
+  "allow_squash_merge": true,
+  "allow_merge_commit": true,
+  "allow_rebase_merge": true,
+  "allow_auto_merge": false,
+  "delete_branch_on_merge": true,
+  "archived": false,
+  "allow_forking": true,
+  "web_commit_signoff_required": false,
+  "security_and_analysis": {
+    "advanced_security": { "status": "enabled" }, // "enabled", "disabled"
+    "secret_scanning": { "status": "enabled" }, // "enabled", "disabled"
+    "secret_scanning_push_protection": { "status": "enabled" } // "enabled", "disabled"
+  },
+  "merge_commit_title": "PR_TITLE", // "PR_TITLE", "MERGE_MESSAGE"
+  "merge_commit_message": "PR_BODY", // "PR_BODY", "PR_TITLE", "BLANK"
+  "squash_merge_commit_title": "PR_TITLE", // "PR_TITLE", "COMMIT_OR_PR_TITLE"
+  "squash_merge_commit_message": "PR_BODY" // "PR_BODY", "COMMIT_MESSAGES", "BLANK"
+}

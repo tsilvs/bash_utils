@@ -102,3 +102,26 @@ Clones a list of remote repos to a local dir.
 # git.init.proj() {
 # 	fs.tree.spawn struct
 # }
+
+# git.remote.repo.init() {
+# 	read -s -p "Enter your API key" -t $TIMEOUT TOKEN
+# 	local REPO_DATA # read from a file - repo.json
+# 	local API_ENDPOINT
+# 		# https://api.github.com/user/repos
+# 		# https://gitlab.com/api/v4/projects
+# 	local API_HEADERS
+# 		# --header "Authorization: token ${TOKEN}" \
+# 		# --header "PRIVATE-TOKEN: ${TOKEN}" \
+# 		# --header "Accept: application/vnd.github+json" \
+# 		# --header "Content-Type: application/json" \
+# 	local TIMEOUT=10
+# 	curl \
+# 		--include \
+# 		--verbose \
+# 		--location \
+# 		--request POST \
+# 		"${API_HEADERS}" \
+# 		--data-raw "${REPO_DATA}" \
+# 		--data "${REPO_DATA}" \
+# 		"${API_ENDPOINT}"
+# }
