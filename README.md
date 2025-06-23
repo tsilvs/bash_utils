@@ -2,6 +2,8 @@
 > I am spread too thin between all of my projects, so if you can support my efforts or wish to contribute - please contact me.
 >
 > My username here is almost the same on most popular online social platforms.
+>
+> I am open to business proposals as well. CV at LinkedIn.
 
 # Bash Utility Functions Library
 
@@ -33,6 +35,7 @@ bash_utils_install_clone() {
 	local install_dir_rel="\$(realpath \$(dirname \"\${BASH_SOURCE[0]}\"))/${author_name}/${project_name}"
 	mkdir -p "${install_dir}"
 	git clone "${git_remote}" "${install_dir}"
+	# This will generate a recursive importer script that goes exactly 2 levels deep in the file tree - to author and then to repo itself
 	echo -e "for func_lib in ${install_dir_rel}/*.sh; do
 		source \"\${func_lib}\"
 	done" >> "${install_root}/source.import.${author_name}.${project_name}.sh"
@@ -40,7 +43,7 @@ bash_utils_install_clone() {
 ```
 
 > [!TIP]
-> If you wish to keep your system de-cluttered, I recommend installing these scripts to a shared location.
+> To keep your system de-cluttered, install scripts to a location shared between users.
 
 > [!CAUTION]
 > Be careful with elevated privileges execution and important system files editing!
