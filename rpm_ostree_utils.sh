@@ -2,15 +2,31 @@
 
 alias rot='rpm-ostree'
 
+# rot.install() {
+# 	local packages
+# 	rpm-ostree install --idempotent --apply-live --assumeyes
+# }
+
+# alias rot_i='rot.install'
+
 alias rot_i='rpm-ostree install --idempotent --apply-live --assumeyes'
+
+# rot.uninstall() {
+# 	local packages
+# 	rpm-ostree uninstall --idempotent --assumeyes
+# }
+
+# alias rot_u='rot.uninstall'
+
 alias rot_u='rpm-ostree uninstall --idempotent --assumeyes'
 
 rot.search() {
 	rpm-ostree search "${1}" | sort -u | perl -ne 'print if /^[^=]/'
 }
 
+alias rot_s='rot.search'
+
 rot.booted() {
-	#TODO: FIX!!!
 	[[ " $* " =~ ' --help ' ]] && {
 		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [properties]
 Get information about the currently booted deployment.

@@ -137,9 +137,7 @@ Options:
 	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
 }
 
-podman.img.conf() {
-
-}
+# podman.img.conf() {}
 
 podman.img.id() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
@@ -178,7 +176,7 @@ Show image internal environment for current context.
 	}
 	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
 	local image_name="${1:?"Image name required"}"
-	sudo docker image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
+	sudo podman image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
 }
 
 podman.img.mv.root() {

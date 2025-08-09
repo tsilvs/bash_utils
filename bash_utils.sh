@@ -37,6 +37,12 @@ rename.() {
 	return $?
 }
 
+# mvall() {
+# 	local match="${1}"
+# 	local ext="${2}"
+# 	for file in $match; do mv "$file" "${file%.}.${ext}"; done
+# }
+
 ls.git() {
 	[[ " $* " =~ ' --help ' ]] && {
 		echo -e "Usage: ls.git
