@@ -2,10 +2,8 @@
 
 adb.users() {
 	local device="${1:?"Device ID (Serial or IP address) is required"}"
-	adb -s $device shell pm list users
+	adb -s $device shell pm list users | tail -n +2 | awk -F "[{:}]" '{print $2}'
 }
-
-alias adb_u='adb.users'
 
 adb.u() {
 	adb.users $@
@@ -33,7 +31,7 @@ adb.diff.apps() {
 adb.ifu() {
 	# TODO:
 	# + Accept multiple
-	# 	+ Users
+	# 	+ Users - implemented in ifa
 	# 	+ Apps - done
 	# + Accept flags
 	# 	+ for all users
@@ -49,10 +47,20 @@ adb.ifu() {
 	done
 }
 
+adb.ifa() {
+	local device="${1:?"Device ID (Serial or IP address) is required"}"
+	local argnum=1
+	shift ${argnum}
+	local apps=("$@"); [[ ${#apps[@]} -eq 0 ]] && { echo "At least one app package name is required"; return 1; }
+	for u in $(adb.u "${device}"); do
+		adb.ifu "${device}" "${u}" "${apps}"
+	done
+}
+
 adb.ufu() {
 	# TODO:
 	# + Accept multiple
-	# 	+ Users
+	# 	+ Users - implemented in ufa
 	# 	+ Apps - done
 	# + Accept flags
 	# 	+ for all users
@@ -65,6 +73,16 @@ adb.ufu() {
 	for app in "${apps[@]}"; do
 		echo "Uninstalling ${app} for user ${u} on device ${device}"
 		adb -s "${device}" shell cmd package uninstall --user "${u}" "${app}"
+	done
+}
+
+adb.ufa() {
+	local device="${1:?"Device ID (Serial or IP address) is required"}"
+	local argnum=1
+	shift ${argnum}
+	local apps=("$@"); [[ ${#apps[@]} -eq 0 ]] && { echo "At least one app package name is required"; return 1; }
+	for u in $(adb.u "${device}"); do
+		adb.ufu "${device}" "${u}" "${apps}"
 	done
 }
 
