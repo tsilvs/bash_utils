@@ -70,6 +70,6 @@ sudo bash_utils_install_clone "${scope_path}" git@github.com:tsilvs/bash_utils.g
 + [ ] UI with `yad`
 + [ ] Proper packaging with `.rpm`, `.deb`, `pkgbuild`, `flatpak`, `bpkg`, `podman` image or any other suitable packaging tool
 + [ ] Programming language rewrite?
-	+ [ ] Interpreted (Ruby, TypeScript, Python)?
-	+ [ ] Compiled (Zig, Rust, Crystal, Go, Kotlin, Haskell)?
+	+ [ ] Interpreted (TypeScript, PureScript)?
+	+ [ ] Compiled (Zig, Rust, Crystal, Go, Kotlin, Haskell, Nim, F#, OCaml)?
 	+ [ ] any other that's well integrated with Linux ecosystem?

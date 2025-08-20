@@ -32,6 +32,10 @@ tree.() {
 	return $?
 }
 
+tree.paths() {
+	tree -I .git -I node_modules -I .vscode -I .agent -i -f --noreport
+}
+
 rename.() {
 	prename "$@"
 	return $?
