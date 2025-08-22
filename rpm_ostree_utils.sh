@@ -1,30 +1,12 @@
 #!/bin/bash
 
-alias rot='rpm-ostree'
-
-# rot.install() {
-# 	local packages
-# 	rpm-ostree install --idempotent --apply-live --assumeyes
-# }
-
-# alias rot_i='rot.install'
-
-alias rot_i='rpm-ostree install --idempotent --apply-live --assumeyes'
-
-# rot.uninstall() {
-# 	local packages
-# 	rpm-ostree uninstall --idempotent --assumeyes
-# }
-
-# alias rot_u='rot.uninstall'
-
-alias rot_u='rpm-ostree uninstall --idempotent --assumeyes'
-
-rot.search() {
-	rpm-ostree search "${1}" | sort -u | perl -ne 'print if /^[^=]/'
-}
-
-alias rot_s='rot.search'
+rot() { rpm-ostree "$@"; return $?; }
+rot.install() { rot install --idempotent --apply-live --assumeyes "$@"; return $?; }
+rot.i() { rot.install "$@"; return $?; }
+rot.uninstall() { rot uninstall --idempotent --assumeyes "$@"; return $?; }
+rot.u() { rot.uninstall "$@"; return $?; }
+rot.search() { rot search "$@" | sort -u | perl -ne 'print if /^[^=]/'; return $?; }
+rot.s() { rot.search "$@"; return $?; }
 
 rot.booted() {
 	[[ " $* " =~ ' --help ' ]] && {
