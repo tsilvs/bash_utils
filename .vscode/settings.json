@@ -1,0 +1,26 @@
+{
+	"cSpell.words": [
+		"bootable"
+	],
+	"cSpell.ignoreWords": [
+		"argjson",
+		"assumeyes",
+		"bootc",
+		"copr",
+		"COPR",
+		"depl",
+		"depls",
+		"dirsfirst",
+		"fromjson",
+		"lsdeps",
+		"lsdepsver",
+		"lskeys",
+		"noreport",
+		"osname",
+		"ostree",
+		"Ostree",
+		"rechunk",
+		"rpmmd",
+		"rpmostree"
+	]
+}
