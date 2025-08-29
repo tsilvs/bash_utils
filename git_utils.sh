@@ -4,7 +4,7 @@
 
 git.dir.check() {
 	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: git.dir.check REPO_PATH
+		echo -e "Usage: ${FUNCNAME[0]} REPO_PATH
 Checks if the directory is a git repo.
 	--help	Displays this help message"
 		return 0
@@ -16,7 +16,7 @@ Checks if the directory is a git repo.
 
 git.url.to_dir() {
 	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: git.url.to_dir REMOTE_URL
+		echo -e "Usage: ${FUNCNAME[0]} REMOTE_URL
 Extracts directory name from a git remote url.
 	--help	Displays this help message"
 		return 0
@@ -31,7 +31,7 @@ Extracts directory name from a git remote url.
 
 git.clone.to_dir() {
 	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: git.clone.to_dir REMOTE_URL [REPO_DIR]
+		echo -e "Usage: ${FUNCNAME[0]} REMOTE_URL [REPO_DIR]
 Clones a remote repo to a local dir.
 	--help	Displays this help message"
 		return 0
@@ -39,14 +39,17 @@ Clones a remote repo to a local dir.
 	local remote_address="${1:?"Remote address is required"}"
 	local target_dir_input="${2:-"$(git.url.to_dir "${remote_address}")"}"
 	local target_dir_IV="${target_dir_input:?"Target Dir is required"}"
-	local target_dir="$(realpath -m "${target_dir_IV}")"
-	mkdir -p "$target_dir"
-	git -C "$target_dir" clone "$remote_address" .
+	local target_dir
+	# local repo_root_input="${3:-$(pwd)}"
+	local repo_root_input="$(pwd)"
+	target_dir="$(realpath -m "${target_dir_IV}")"
+	mkdir -p "${target_dir}"
+	git -C "${repo_root_input}" clone "${remote_address}" "${target_dir}"
 }
 
 git.clone.list() {
 	[[ ($# -eq 0) || " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: git.clone.list LIST_FILE_PATH [REPO_ROOT]
+		echo -e "Usage: ${FUNCNAME[0]} LIST_FILE_PATH [REPO_ROOT]
 Clones a list of remote repos to a local dir.
 	--help	Displays this help message"
 		return 0
