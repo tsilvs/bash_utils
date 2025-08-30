@@ -35,6 +35,13 @@ ostree.depl.booted.checkout() {
 	return $?
 }
 
+ostree.depl.pin() {
+	local di="${1:?"Deployment Index required"}"
+	shift 1
+	ostree "$@" admin pin "${di}"
+	return $?
+}
+
 ostree.depl.unpin() {
 	local di="${1:?"Deployment Index required"}"
 	shift 1
