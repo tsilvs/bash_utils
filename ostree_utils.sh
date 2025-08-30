@@ -19,14 +19,33 @@ ostree.depl.booted.commithash() {
 	return $?
 }
 
+ostree.depl.i() {
+	local hash="${1:?"Deployment Hash is required"}"
+	ostree.depls "$@" | perl -ne 'print if !/^[ ]{4}/' | sed 's/[*]/ /g' | awk --field-separator " " '{ print $2 }' | awk "/${hash}/ {print FNR-1}"
+	return $?
+}
+
 ostree.depl.booted.i() {
-	# ostree.depls "$@" | perl -ne 'print if !/^[ ]{4}/' | grep --fixed-strings --line-number "$(ostree.depl.booted)" | cut -f1 -d:
-	ostree.depls "$@" | perl -ne 'print if !/^[ ]{4}/' | awk "/$(ostree.depl.booted)/ {print FNR-1}"
+	ostree.depl.i "$(ostree.depl.booted.commithash)"
 	return $?
 }
 
 ostree.depl.booted.checkout() {
 	ostree checkout "$(ostree.depl.booted.commithash)" "$@"
+	return $?
+}
+
+ostree.depl.unpin() {
+	local di="${1:?"Deployment Index required"}"
+	shift 1
+	ostree "$@" admin pin "${di}" --unpin
+	return $?
+}
+
+ostree.depl.undelpoy() {
+	local di="${1:?"Deployment Index required"}"
+	shift 1
+	ostree "$@" admin undeploy "${di}"
 	return $?
 }
 
