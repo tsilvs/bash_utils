@@ -2,6 +2,8 @@
 
 # Ostree Utils
 
+# Requires ostree~='2025.2'
+
 ostree.depls() {
 	ostree admin status "$@"
 	return $?
@@ -12,9 +14,19 @@ ostree.depl.booted() {
 	return $?
 }
 
+ostree.depl.booted.commithash() {
+	ostree.depl.booted "$@" | awk --field-separator "." '{ print $1 }'
+	return $?
+}
+
 ostree.depl.booted.i() {
 	# ostree.depls "$@" | perl -ne 'print if !/^[ ]{4}/' | grep --fixed-strings --line-number "$(ostree.depl.booted)" | cut -f1 -d:
 	ostree.depls "$@" | perl -ne 'print if !/^[ ]{4}/' | awk "/$(ostree.depl.booted)/ {print FNR-1}"
+	return $?
+}
+
+ostree.depl.booted.checkout() {
+	ostree checkout "$(ostree.depl.booted.commithash)" "$@"
 	return $?
 }
 
@@ -24,6 +36,9 @@ ostree.depl.booted.i() {
 # Origin - repository available by an URL, description stored in an origin file
 # Sysroot - "System Root", a physical location storing repo and deployments
 # bootc - ?
+
+# /ostree/deploy/<os-name>
+# Here we can have deployments of different OSes stored in parallel
 
 # Typical file locations
 # `/sysroot` - system root
