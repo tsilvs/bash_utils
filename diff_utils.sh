@@ -1,0 +1,1 @@
+# diff -y --suppress-common-lines ${file1} ${file2} | wc -l

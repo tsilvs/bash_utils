@@ -5,8 +5,10 @@ fpl() {
 	return $?
 }
 
-# fpl.sock() {
-# 	local browser=${1:?""}
-# 	flatpak override --system --filesystem=xdg-run/app/org.keepassxc.KeePassXC:ro "${browser}"
+# fpl.fslink() {
+# 	local app1=${1:?"Package 1 is required"}
+# 	local app2=${2:?"Package 2 is required"}
+# 	local scope=${3:-"--system"}
+# 	flatpak override "${scope}" --filesystem="xdg-run/app/${app1}:ro" "${app2}"
 # 	return $?
 # }
