@@ -109,6 +109,20 @@ rot.pl.diff.rem() {
 	rot.pl.diff "${1}" | grep -E "^\-" | tail -n+2 | sed 's/^[+-]//g'
 }
 
+# rot.s.inst() {
+# 	# TODO: param --description to include a description.
+# 	local prefix="${1:?"Search prefix required"}"
+# 	grep -f <(rot.pl --all | grep "${prefix}") <(rot.s "${prefix}") | awk --field-separator " : " '{ print $1 }'
+# 	return $?
+# }
+
+# rot.s.ninst() {
+# 	# TODO: param --description to include a description.
+# 	local prefix="${1:?"Search prefix required"}"
+# 	grep -v -f <(rot.pl --all | grep "${prefix}") <(rot.s "${prefix}") | awk --field-separator " : " '{ print $1 }'
+# 	return $?
+# }
+
 #rot.copr.enable() {
 #	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 #		echo -e "Usage: ${FUNCNAME[0]} <copr_owner>/<copr_project>
