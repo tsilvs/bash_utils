@@ -12,3 +12,8 @@ fpl() {
 # 	flatpak override "${scope}" --filesystem="xdg-run/app/${app1}:ro" "${app2}"
 # 	return $?
 # }
+
+# flatpak override --system --filesystem=xdg-run/app/org.keepassxc.KeePassXC:ro io.github.ungoogled_software.ungoogled_chromium
+# flatpak override --system --talk-name=org.freedesktop.NativeMessagingProxy io.github.ungoogled_software.ungoogled_chromium
+# flatpak override --system --talk-name=org.freedesktop.NativeMessagingProxy org.keepassxc.KeePassXC
+# flatpak override --system --filesystem=xdg-run/app/org.keepassxc.KeePassXC/:create io.github.ungoogled_software.ungoogled_chromium
