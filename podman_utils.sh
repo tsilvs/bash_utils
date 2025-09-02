@@ -74,6 +74,13 @@ podman.cont.conf() {
 	local container_name="${1:?"Container Name is required"}"
 	podman container inspect "${container_name}" --format json | jq -r '.[0]'
 	# | jq -r '.[0].Mounts[]'
+	return $?
+}
+
+podman.cont.cmd() {
+	local container_name="${1:?"Container Name is required"}"
+	podman.cont.conf "${container_name}" | jq -r '.Config.Cmd[0]'
+	return $?
 }
 
 podman.cont.id() {
