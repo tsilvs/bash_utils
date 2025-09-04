@@ -12,6 +12,21 @@ keepassxc-cli() {
 	return $?
 }
 
+codium() {
+	flatpak run --command=com.vscodium.codium --file-forwarding com.vscodium.codium "$@"
+	return $?
+}
+
+code() {
+	codium "$@"
+	return $?
+}
+
+npm() {
+	pnpm "$@"
+	return $?
+}
+
 # pgrep.() {
 # 	local pipe # TODO: Accept pipe stdin
 # 	local file # TODO: Accept file path
