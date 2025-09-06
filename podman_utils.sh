@@ -144,7 +144,6 @@ Options:
 	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
 }
 
-# podman.img.conf() {}
 
 podman.img.id() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
@@ -173,6 +172,24 @@ Show image location for current context.
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
 }
 
+podman.img.conf() {
+	local img_name="${1:?"Image Name is required"}"
+	podman image inspect "${img_name}" --format json | jq -r '.[0]'
+	return $?
+}
+
+podman.img.cmd() {
+	local img_name="${1:?"Image Name is required"}"
+	podman.img.conf "${img_name}" | jq -r '.Config.Cmd[0]'
+	return $?
+}
+
+podman.img.entry() {
+	local img_name="${1:?"Image Name is required"}"
+	podman.img.conf "${img_name}" | jq -r '.Config.Entrypoint[0] | join(" ")'
+	return $?
+}
+
 podman.img.env() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
@@ -182,8 +199,8 @@ Show image internal environment for current context.
 		return 0;
 	}
 	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
-	local image_name="${1:?"Image name required"}"
-	sudo podman image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
+	local img_name="${1:?"Image Name is required"}"
+	podman.cont.conf "${img_name}" | jq --raw-output '.Config.Env[]'
 }
 
 podman.img.mv.root() {
@@ -198,7 +215,7 @@ Options:
 		return 0;
 	}
 	local img_name="${1:?"Image Name is required"}"
-	podman save "${img_name}" | sudo podman load
+	podman save "${img_name}" | podman load
 }
 
 podman.conf.path() {
