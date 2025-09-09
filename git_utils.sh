@@ -109,9 +109,13 @@ Clones a list of remote repos to a local dir.
 # git.remote.repo.init() {
 # 	read -s -p "Enter your API key" -t $TIMEOUT TOKEN
 # 	local REPO_DATA # read from a file - repo.json
+# 	# or assume folder name as project name and local user name as remote user name as defaults
+# 	# and read with a prompt for actual values
+# 	# maybe even handle this in `npm init` manner with generation of an analog of `package.json`
 # 	local API_ENDPOINT
-# 		# https://api.github.com/user/repos
-# 		# https://gitlab.com/api/v4/projects
+# 		# GitHub: "${api_domain}/user/repos"
+# 		# GitLab: "${api_domain}/api/v4/projects"
+# 		# Gitea: "${api_domain}/api/v1/user/repos"
 # 	local API_HEADERS
 # 		# --header "Authorization: token ${TOKEN}" \
 # 		# --header "PRIVATE-TOKEN: ${TOKEN}" \
@@ -127,4 +131,8 @@ Clones a list of remote repos to a local dir.
 # 		--data-raw "${REPO_DATA}" \
 # 		--data "${REPO_DATA}" \
 # 		"${API_ENDPOINT}"
+# }
+
+# git.localhost.setup() {
+# 	# Setup steps to create a local non-graphical `git` Linux user and allow SSHing to it
 # }
