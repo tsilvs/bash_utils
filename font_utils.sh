@@ -11,3 +11,6 @@ font.ls.names() {
 		font.name "${font_file}"
 	done
 }
+
+# fc-list
+# fc-cache --verbose
