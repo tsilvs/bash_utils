@@ -27,6 +27,11 @@ npm() {
 	return $?
 }
 
+chromium() {
+	flatpak run --command=chromium --file-forwarding io.github.ungoogled_software.ungoogled_chromium "$@"
+	return $?
+}
+
 # pgrep.() {
 # 	local pipe # TODO: Accept pipe stdin
 # 	local file # TODO: Accept file path
