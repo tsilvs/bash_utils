@@ -12,6 +12,16 @@ ls.() {
 	return $?
 }
 
+# lsw() {
+# 	find -L "${path}" -wholename "${name}" -ls
+# 	return $?
+# }
+
+# catw() {
+# 	find -L "${path}" -wholename "${name}" -exec cat {} \;
+# 	return $?
+# }
+
 lsd.() {
 	lsd -1 -A -G -X --color always --group-dirs first -l -g "$@"
 	return $?
