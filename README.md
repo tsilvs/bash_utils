@@ -48,23 +48,27 @@ bash_utils_install_clone() {
 > [!CAUTION]
 > Be careful with elevated privileges execution and important system files editing!
 
-## Pick scope path
+## Pick a `scope_path`
 
 | User scope    | For login sessions | For interactive sessions |
 |---------------|--------------------|--------------------------|
 | System-wide   | `/etc/profile.d/`  | `/etc/bashrc.d/`         |
 | User-specific | `~/.profile.d/`    | `~/.bashrc.d/`           |
 
-Edit & add `for f in $scope/*.sh; do source $f; done` to the default sourced file (e.g. `/etc/bashrc`).
-
 ## Install
 
 ```sh
-sudo bash_utils_install_clone "${scope_path}" git@github.com:tsilvs/bash_utils.git
+scope_path="whatever/you/chose"
+# sudo -i # if necessary, e.g. system-wide installation
+# source the function
+bash_utils_install_clone "${scope_path}" git@github.com:tsilvs/bash_utils.git
+# Add next line to the default sourced file (e.g. `/etc/bashrc`).
+for f in "${scope_path}"/*.sh; do source $f; done
 ```
 
 # Plans
 
++ [ ] Better installation script
 + [ ] Proper i18n with separate locale files
 + [ ] Rewrite with any `bash` scripting library (e.g. `aks/bash-lib`?) or pre-processor (e.g. `TypeShell`?) for better stability, reliability and maintainability
 + [ ] UI with `yad`
