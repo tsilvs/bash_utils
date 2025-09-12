@@ -1,7 +1,8 @@
 #!/bin/bash
 
-fpl() {
-	flatpak list --system --app --columns=origin,application,name,version | tail -n+1 | sort -u
+flatpak.ls() {
+	flatpak list --system --app --columns=application | tail -n+1 | sort -u
+	# flatpak list --system --app --columns=origin,application,name,version | tail -n+1 | sort -u
 	return $?
 }
 
