@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 flatpak.ls() {
 	flatpak list --system --app --columns=application | tail -n+1 | sort -u

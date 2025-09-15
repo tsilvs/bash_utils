@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # `_IV` variable suffix stands for `input validation`
 

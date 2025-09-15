@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 adb.users() {
 	local device="${1:?"Device ID (Serial or IP address) is required"}"

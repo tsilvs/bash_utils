@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # add_ssh_keys () {
 # 	ssh-add -l || eval "$(ssh-agent -s)";

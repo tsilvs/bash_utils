@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #chrome.search.keywords.merge() {
 #	src_db="$1"

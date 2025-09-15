@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 secret.luks.pass() {
 	local devuuid="${1:?"Device UUID is required. Try lsblk."}"

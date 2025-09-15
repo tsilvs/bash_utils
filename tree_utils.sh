@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 tree.() {
 	tree -a --gitignore -I '.git' -F --noreport --dirsfirst "$@"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #local install_dir_rel="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 #echo "$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 #echo "$(dirname "${BASH_SOURCE[0]}")"

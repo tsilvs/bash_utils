@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 conf.set() {
 	local conf_file="${1:?"Conf file is required"}"

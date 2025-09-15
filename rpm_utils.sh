@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 rpm.pkg.info() {
 	local pkg_name="${1:?"Package name is required"}"
 	rpm -qi "${pkg_name}"

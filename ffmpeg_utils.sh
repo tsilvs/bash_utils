@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ffmpeg.x2.cmp() {
 # 	ffmpeg -i "$input" -vf "setpts=0.5*PTS" -filter:a "atempo=2.0" -vcodec libx265 -crf 28 "$output.mkv"

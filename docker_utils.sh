@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #docker.images.ls() {
 #	docker images --format "docker-daemon:{{.Repository}}:{{.Tag}}"

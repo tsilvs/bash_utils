@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 rot() { rpm-ostree "$@"; return $?; }
 rot.install() { rot install --idempotent --apply-live --assumeyes "$@"; return $?; }

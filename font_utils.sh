@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 font.name() {
 	local font_file="${1:?"Font file is required"}"

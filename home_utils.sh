@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 home.tar() {
 	local archive_name="backup-home.tar.gz"

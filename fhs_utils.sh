@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Equivalency mappings
 # /etc/ <-> ~/.config/

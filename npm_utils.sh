@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 npm.search() {
 	local query="${@}"
