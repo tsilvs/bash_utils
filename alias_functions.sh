@@ -134,6 +134,8 @@ chromium() {
 # alias ffmpegtb='toolbox run --container fedora ffmpeg'
 # alias lyxtb='toolbox run --container fedora lyx'
 # alias abiwordtb='toolbox run --container fedora abiword'
+
+# ###### pdf tools
 # alias pdf2dsctb='toolbox run --container fedora pdf2dsc'
 # alias pdfattachtb='toolbox run --container fedora pdfattach'
 # alias pdffontstb='toolbox run --container fedora pdffonts'
