@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 
 neofetch.() {
-	fastfetch "$@"
+	/usr/bin/fastfetch "$@"
 	return $?
 }
 
 fetch.() {
-	fastfetch "$@"
+	/usr/bin/fastfetch "$@"
+	return $?
+}
+
+fetch.ls() {
+	fetch. \
+		--key-type string \
+		--logo none\
+		--structure os:host:kernel:de:wm:terminal:cpu:gpu:gpu2:memory:swap:disk:localip:locale
+}
+
+sysinfo.fetch() {
+	fetch.ls "$@"
 	return $?
 }
 
