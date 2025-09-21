@@ -148,3 +148,73 @@ rot.pl.diff.rem() {
 # Wrap in $(cmd) for a bash array / space separated list
 # To reinstall missing:
 #rot install --apply-live -y $(rot_pl_diff | grep -E -v "^\+" | tail -n+2 | sed 's/^[-]//g')
+
+rot.swap.rm.by.uuid() {
+	set -o errexit
+	set -o pipefail
+	set -o nounset
+
+	local usage="NOT READY YET, DOES NOTHING
+Usage: ${FUNCNAME[0]} [OPTIONS] UUID
+Remove swap safely by UUID.
+	-v, --verbose  Verbose messages
+	-h, --help     Show this help
+"
+	# -d, --dry-run  Show planned actions without changes to the system
+	local verbose=0
+	local showhelp=0
+	# local dryrun=0
+	local uuid=""
+
+	# Parse options
+	while (( "$#" )); do
+		case "$1" in
+			--verbose|-V) verbose=1; shift 1 ;;
+			--help|-h) showhelp=1; shift 1 ;;
+			# --dry-run|-d) dryrun=1; shift 1 ;;
+			*) if [[ -z "$uuid" ]]; then uuid="${1}"; shift 1; else echo "Error: Unexpected argument ${1}"; showhelp=1; fi ;;
+		esac
+	done
+
+	[[ -z "$uuid" ]] && { echo "Error: UUID is required"; showhelp=1; return 1; }
+
+	(( showhelp )) && { echo -e "${usage}"; return 0; }
+
+	# (( verbose )) && echo "Looking up swap device for UUID: $uuid"
+
+	# # Resolve swap device path by UUID
+	# local devpath="/dev/disk/by-uuid/$uuid"
+	# [[ ! -e $devpath ]] && { echo "Error: No device found with UUID $uuid"; return 1; }
+
+	# local swapdev
+	# swapdev=$(readlink -f "$devpath")
+
+	# (( verbose )) && echo "Swap device resolved to: $swapdev"
+
+	# # Disable swap
+	# (( verbose )) && echo "Turning off swap on $swapdev"
+	# sudo swapoff "$swapdev"
+
+	# # Comment out swap in /etc/fstab
+	# if grep -q "UUID=$uuid" /etc/fstab; then
+	# 	(( verbose )) && echo "Commenting out swap entry in /etc/fstab"
+	# 	sudo sed -i.bak "/UUID=$uuid/ s/^/#/" /etc/fstab
+	# else
+	# 	(( verbose )) && echo "No matching swap entry in /etc/fstab to comment"
+	# fi
+
+	# # Remove resume=UUID= from kernel args using rpm-ostree if exists
+	# if command -v rpm-ostree >/dev/null 2>&1; then
+	# 	if rpm-ostree status | grep -q "kernel-args"; then
+	# 		(( verbose )) && echo "Removing resume=UUID=$uuid from kernel arguments"
+	# 		sudo rpm-ostree kargs --delete "resume=UUID=$uuid"
+	# 		(( verbose )) && echo "Reboot required to apply kernel argument changes"
+	# 	fi
+	# else
+	# 	(( verbose )) && echo "rpm-ostree not found, skipping kernel args clean up"
+	# fi
+
+	# (( verbose )) && echo "Swap removal by UUID $uuid completed"
+
+	return 0
+}
