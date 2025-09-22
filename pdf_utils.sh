@@ -1,36 +1,55 @@
 #!/usr/bin/env bash
 
-# for file in "${files[@]}"; do
-# 	output="${file%.pdf}.wmk.pdf"
-# 	watermark grid "$file" "WATERMARK" -o 0.2 -a 45 -ts 50 -tc "#AAAAAA" -s "$output"
-# done
+pdf.flat.watermark() {
+	set -o errexit
+	set -o pipefail
+	set -o nounset
 
-# for file in "${files[@]}"; do
-# 	rm "${file}"
-# 	rm "${file%.pdf}.flat.pdf"
-# done
+	local usage="Usage: ${FUNCNAME[0]} [OPTIONS] files...
+Flattens and watermarks files.
+	-w, --watermark [text]  Watermark text
+	-v, --verbose           Verbose messages
+	-h, --help              Show this help
+"
+	# -d, --dry-run    Show planned actions without changes to the system
+	local verbose=0
+	local showhelp=0
+	# local dryrun=0
+	local watermark="WATERMARK"
+	local files=("")
 
-# for file in "${files[@]}"; do
-# 	gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="${file%.pdf}.flat.pdf" "$file"
-# done
+	# Parse options
+	while (( "$#" )); do
+		case "$1" in
+			--watermark|-w) watermark="${2}"; shift 2 ;;
+			--verbose|-V) verbose=1; shift 1 ;;
+			--help|-h) showhelp=1; shift 1 ;;
+			# --dry-run|-d) dryrun=1; shift 1 ;;
+		esac
+	done
 
-# for file in "${files[@]}"; do
-# 	dir="$(dirname "$file")"
-# 	base="$(basename "${file%.pdf}")"
-# 	output_wmk="${dir}/${base}.wmk.pdf"
-# 	output_flat="${dir}/${base}.wmk.flat.pdf"
+	local files=("$@")
 
-# 	# Generate watermark PDF, overwrite if exists
-# 	watermark grid "$file" "WATERMARK" -o 0.2 -a 45 -ts 50 -tc "#AAAAAA" -s "$output_wmk"
+	# [[ -z "$watermark" ]] && { echo "Error: watermark required"; showhelp=1; return 1; }
+	[[ -z "$files" ]] && { echo "Error: files required"; showhelp=1; return 1; }
 
-# 	# Convert pages to PNG images in same directory with original filename prefix, overwrite images if exist
-# 	gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -sOutputFile="${dir}/${base}_tmp_page_%03d.png" "$output_wmk"
+	(( showhelp )) && { echo -e "${usage}"; return 0; }
 
-# 	# Convert PNG images back to single flattened PDF, overwrite if exists
-# 	magick convert "${dir}/${base}_tmp_page_"*.png "$output_flat"
-# 	mkdir -p ~/Desktop/upload
-# 	cp "$output_flat" ~/Desktop/upload
+	for file in "${files[@]}"; do
+		dir="$(dirname "$file")"
+		base="$(basename "${file%.pdf}")"
+		output_wmk="${dir}/${base}.wmk.pdf"
+		output_flat="${dir}/${base}.wmk.flat.pdf"
 
-# 	# Clean up temporary images
-# 	rm -f "${dir}/${base}_tmp_page_"*.png
-# done
+		watermark grid "${file}" "${watermark}" -o 0.2 -a 45 -ts 50 -tc "#AAAAAA" -s "${output_wmk}"
+
+		gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -sOutputFile="${dir}/${base}_tmp_page_%03d.png" "${output_wmk}"
+
+		magick "${dir}/${base}_tmp_page_"*.png "${output_flat}"
+		# mkdir -p ~/Desktop/upload
+		# cp "${output_flat}" ~/Desktop/upload
+
+		rm "${output_wmk}"
+		rm "${dir}/${base}_tmp_page_"*.png
+	done
+}
