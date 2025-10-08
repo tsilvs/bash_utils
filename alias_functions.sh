@@ -44,6 +44,13 @@ catw() {
 	return $?
 }
 
+catp() {
+	# Example: catp '[\d]+.*[.]md'
+	local pattern="${1:?"Pattern is required."}"
+	cat $(ls -1 | grep -P "${pattern}")
+	# If `grep`` is without PCRE (`perl`) support: use `ls -1 | perl -ne "print if /${pattern}/"`
+}
+
 lsd.() {
 	lsd -1 -A -G -X --color always --group-dirs first -l -g "$@"
 	return $?
@@ -57,6 +64,16 @@ eza.() {
 md.() {
 	mkdir "$@"
 	return $?
+}
+
+mktouch() {
+	if [ $# -eq 0 ]; then
+		echo "No file paths supplied."
+		return 1
+	fi
+	for filepath in "$@"; do
+		mkdir -p "$(dirname "$filepath")" && touch "$filepath"
+	done
 }
 
 rename.() {
