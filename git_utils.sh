@@ -136,3 +136,15 @@ Clones a list of remote repos to a local dir.
 # git.localhost.setup() {
 # 	# Setup steps to create a local non-graphical `git` Linux user and allow SSHing to it
 # }
+
+# git.dirs.noremote() {
+# 	# prints directories with git repos that don't have a specific remote specified
+# 	local remote="${1?"Remote name is required."}"
+# 	for d in */; do
+# 	if [[ -d "$d/.git/config" && grep -q "url =.*lan" "$d/.git/config" ]]; then
+# 		continue
+# 	fi
+# 		echo "$d"
+# 	done
+# }
+
