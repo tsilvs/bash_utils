@@ -1,0 +1,21 @@
+{
+	"Shebang: Bash": {
+		"scope": "shellscript",
+		"prefix": "!b",
+		"body": [
+			"#!/usr/bin/env bash"
+		],
+		"description": "Shebang: Bash"
+	},
+	"Function: Base": {
+		"scope": "shellscript",
+		"prefix": "f()",
+		"body": [
+			"$1() {",
+			"\t$2 \"$@\"",
+			"\treturn $?",
+			"}"
+		],
+		"description": "Function: Base"
+	},
+}
