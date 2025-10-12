@@ -49,6 +49,14 @@ scope_path="whatever/you/chose" bash_utils.install.clone "${scope_path}" git@git
 for f in "${scope_path}"/*.sh; do source $f; done
 ```
 
+## Update
+
+```sh
+# sudo -i # if necessary, e.g. system-wide installation
+# Pull an update with `git`
+scope_path="whatever/you/chose" git_remote="origin" git -C "${scope_path}" pull "${git_remote}"
+```
+
 # Plans
 
 + [x] Better installation script
