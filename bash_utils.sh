@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+history.ls() {
+	HISTTIMEFORMAT="" history "$@" | cut -c 8-
+	return $?
+}
+
 ls.git() {
 	[[ " $* " =~ ' --help ' ]] && {
 		echo -e "Usage: ls.git
