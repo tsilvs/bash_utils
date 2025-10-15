@@ -53,3 +53,18 @@ Flattens and watermarks files.
 		rm "${dir}/${base}_tmp_page_"*.png
 	done
 }
+
+# pdf.cmp() {
+# 	local filename
+# 	gs \
+# 		-sDEVICE=pdfwrite \
+# 		-dCompatibilityLevel=1.4 \
+# 		-dPDFSETTINGS=/prepress \
+# 		-dPDFSETTINGS=/ebook \
+# 		-dNOPAUSE \
+# 		-dQUIET \
+# 		-dBATCH \
+# 		-sOutputFile=${filename}.cmp.pdf \
+# 		${filename}.pdf
+# }
+

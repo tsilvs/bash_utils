@@ -57,6 +57,9 @@ for f in "${scope_path}"/*.sh; do source $f; done
 scope_path="whatever/you/chose" git_remote="origin" git -C "${scope_path}" pull "${git_remote}"
 ```
 
+> [!TIP]
+> You can also deploy your own `git` user and store ***bare repos*** locally
+
 # Plans
 
 + [x] Better installation script
