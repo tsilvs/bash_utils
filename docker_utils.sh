@@ -28,3 +28,11 @@ docker.img.env() {
 # echo "Image ID: $image_id"
 # echo "Image metadata: /var/lib/docker/image/overlay2/imagedb/content/$image_id"
 
+
+docker.img.exportAll() {
+	:
+	# docker images --format docker-daemon:{{.Repository}}:{{.Tag}}
+}
+
+
+

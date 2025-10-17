@@ -200,7 +200,7 @@ Show image internal environment for current context.
 	}
 	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
 	local img_name="${1:?"Image Name is required"}"
-	podman.cont.conf "${img_name}" | jq --raw-output '.Config.Env[]'
+	podman.img.conf "${img_name}" | jq --raw-output '.Config.Env[]'
 }
 
 podman.img.mv.root() {
@@ -237,3 +237,10 @@ Show config location for current context.
 # 	local merged_conf=""
 # 	echo "${merged_conf}"
 # }
+
+podman.img.importAll() {
+	:
+	# local stdin=???
+	# cat $stdin | xargs podman pull
+}
+
