@@ -32,6 +32,8 @@ Get information about the currently booted deployment.
 	done
 }
 
+rot.booted.version() { rot.booted "$@" | jq -r '.version'; return $?; }
+
 # rot.booted.dir() {
 # 	local depl_booted_serial="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .serial')"
 # 	local depl_booted_checksum="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .checksum')"
