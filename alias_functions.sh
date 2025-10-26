@@ -121,13 +121,18 @@ code() {
 	return $?
 }
 
-npm() {
-	pnpm "$@"
-	return $?
-}
+# npm() {
+# 	pnpm "$@"
+# 	return $?
+# }
 
 chromium() {
 	flatpak run --command=chromium --file-forwarding io.github.ungoogled_software.ungoogled_chromium "$@"
+	return $?
+}
+
+vlc() {
+	flatpak run --command=vlc --file-forwarding org.videolan.VLC "$@"
 	return $?
 }
 
