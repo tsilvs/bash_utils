@@ -53,31 +53,36 @@ pkgls.flatpak.u() {
 
 # ---- Homebrew (macOS/Linuxbrew) --------------------------------------------
 pkgls.brew() {
-	brew bundle dump --file="$backup_dir/Brewfile" --force 2>/dev/null
+	# brew bundle dump --file=- --force 2>/dev/null
+	brew list -1 --installed-on-request
 }
 
 # ---- Node.js (npm) ----------------------------------------------------------
 pkgls.npm() {
-	npm ls -g --depth=0 --parseable 2>/dev/null | awk 'NR>1{print $0}' | awk -F/ '{print $NF}' | sort -u
+	npm ls --global --depth=0 --parseable 2>/dev/null | awk 'NR>1{print $0}' | awk -F/ '{print $NF}' | sort -u
 }
 
-# ---- Node.js (pnpm) ---------------------------------------------------------
-pkgls.pnpm() {
-	pnpm ls -g --depth=0 --parseable 2>/dev/null | awk 'NR>1{print $0}' | awk -F/ '{print $NF}' | sort -u
-}
+# # ---- Node.js (pnpm) ---------------------------------------------------------
+# pkgls.pnpm() {
+# 	pnpm ls --global --depth=0 --parseable 2>/dev/null | awk 'NR>1{print $0}' | awk -F/ '{print $NF}' | sort -u
+# }
 
 # ---- pip -----------------------------------------------------------
 pkgls.pip() {
-	pip list --format=freeze 2>/dev/null
+	pip list --format=columns --not-required 2>/dev/null | awk 'NR>2 {print $1}'
 }
 
 # ---- pipx -------------------------------------------
-pkgls.pipx() {
+pkgls.pipx.s() {
+	pipx list --global --short 2>/dev/null | awk '{print $1}'
+}
+
+pkgls.pipx.u() {
 	pipx list --short 2>/dev/null | awk '{print $1}'
 }
 
 # ---- Ruby (gem) -------------------------------------------------------------
-pkgls.ruby() {
+pkgls.gem() {
 	gem list --no-versions --local 2>/dev/null
 }
 # ---- GNOME Shell Extensions -------------------------------------------------
@@ -151,14 +156,17 @@ pkgls.all() {
 		pkgls.npm
 	fi
 
-	if have_cmd pnpm; then
-		echo "# Packages for pnpm"
-		pkgls.pnpm
-	fi
+	# if have_cmd pnpm; then
+	# 	echo "# Packages for pnpm"
+	# 	pkgls.pnpm
+	# fi
 
 	if have_cmd pipx; then
 		echo "# Packages for pipx"
-		pkgls.pipx
+		echo "## System"
+		pkgls.pipx.s
+		echo "## User"
+		pkgls.pipx.u
 	fi
 
 	if have_cmd gem; then
@@ -184,4 +192,5 @@ pkgls.all() {
 		pkgls.code
 	fi
 }
+
 
