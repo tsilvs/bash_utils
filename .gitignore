@@ -1,2 +1,6 @@
 _test.sh
 _test.*
+.hid
+.ignore
+.bak
+.build
