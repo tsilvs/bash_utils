@@ -81,10 +81,16 @@ pkgls.pipx.u() {
 	pipx list --short 2>/dev/null | awk '{print $1}'
 }
 
+# ---- Rust -------------------------------------------------------------
+pkgls.cargo() {
+	cargo install --list 2>/dev/null | awk '/^\w/ {print $1}'
+}
+
 # ---- Ruby (gem) -------------------------------------------------------------
 pkgls.gem() {
 	gem list --no-versions --local 2>/dev/null
 }
+
 # ---- GNOME Shell Extensions -------------------------------------------------
 pkgls.gnome.s() {
 	gnome-extensions list --system --enabled 2>/dev/null
@@ -105,6 +111,7 @@ pkgls.vscode() {
 	code --list-extensions 2>/dev/null # TODO: Filter globally active
 }
 
+# ---- All -----------------------------------------
 pkgls.code() {
 	pkgls.vscode "$@"
 	return $?
@@ -112,7 +119,7 @@ pkgls.code() {
 
 pkgls.all() {
 
-	local exportDir # TODO: Set from params
+	# local exportDir # TODO: Set from params
 
 	if have_cmd apt; then
 		echo "# Packages for apt"
@@ -169,6 +176,11 @@ pkgls.all() {
 		pkgls.pipx.u
 	fi
 
+	if have_cmd царго; then
+		echo "# Packages for cargo"
+		pkgls.cargo
+	fi
+
 	if have_cmd gem; then
 		echo "# Packages for gem"
 		pkgls.gem
@@ -185,6 +197,10 @@ pkgls.all() {
 	if have_cmd podman; then
 		echo "# Packages for podman"
 		pkgls.podman
+		# echo "## System"
+		# pkgls.podman.s
+		# echo "## User"
+		# pkgls.podman.u
 	fi
 
 	if have_cmd code; then
