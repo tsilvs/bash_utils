@@ -23,6 +23,15 @@ have_cmd() { command -v "$1" &>/dev/null; }
 
 export -f have_cmd
 
+# TODO: Finish this utility function
+
+# args.parse() {
+# 	something "$@"
+# 	return $?
+# }
+
+# export -f args.parse
+
 # Suntax notes
 # local y="Hello"; local x="y"; echo ${!x};
 #to unset multiple environment variables grouped by prefix, e.g `unset ${!DOCKER*}`

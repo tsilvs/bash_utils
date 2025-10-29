@@ -172,6 +172,20 @@ Show image location for current context.
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
 }
 
+# args.parse() {
+# 	# What do I even put here???
+# 	# It's probably supposed to somehow support at least --help option and print a helptext that uses a structured list of params and their descriptions, maybe in a JSON
+# }
+
+# podman.img.ls() {
+# 	# Supposed to just list files inside on an OCI container image
+# 	read imagename lsopts <<< $(args.parse "imagename,lsopts" "$@")
+# 	local mountpoint="$(podman image mount "${imagename}")"
+# 	ls ${lsopts[*]} "${mountpoint}"
+# 	# maybe should cleanup after istelf with `podman image unmount`?
+# 	return $?
+# }
+
 podman.img.conf() {
 	local img_name="${1:?"Image Name is required"}"
 	podman image inspect "${img_name}" --format json | jq -r '.[0]'
