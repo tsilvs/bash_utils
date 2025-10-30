@@ -200,7 +200,7 @@ podman.img.cmd() {
 
 podman.img.entry() {
 	local img_name="${1:?"Image Name is required"}"
-	podman.img.conf "${img_name}" | jq -r '.Config.Entrypoint[0] | join(" ")'
+	podman.img.conf "${img_name}" | jq -r '.Config.Entrypoint | join(" ")'
 	return $?
 }
 
@@ -252,9 +252,34 @@ Show config location for current context.
 # 	echo "${merged_conf}"
 # }
 
-podman.img.importAll() {
-	:
-	# local stdin=???
-	# cat $stdin | xargs podman pull
-}
+# podman.img.importAll() {
+# 	:
+# 	# local stdin=???
+# 	# cat $stdin | xargs podman pull
+# }
+
+export -f podman.commit
+export -f podman.root.dir
+export -f podman.conts.manif.path
+export -f podman.conts.manif
+export -f podman.cont.manif
+export -f podman.cont.conf
+export -f podman.cont.cmd
+export -f podman.cont.id
+export -f podman.cont.dir
+export -f podman.imgs.manif.path
+export -f podman.imgs.manif
+export -f podman.img.manif
+export -f podman.img.id
+export -f podman.img.dir
+# export -f args.parse
+# export -f podman.img.ls
+export -f podman.img.conf
+export -f podman.img.cmd
+export -f podman.img.entry
+export -f podman.img.env
+export -f podman.img.mv.root
+export -f podman.conf.path
+# export -f podman.conf.merge
+# export -f podman.img.importAll
 
