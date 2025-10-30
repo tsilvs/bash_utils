@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-
-source "$SCRIPT_DIR/lib/bashlib.sh"
+source "${BASH_SOURCE[0]}/lib/bashlib.sh"
 
 rot() { rpm-ostree "$@"; return $?; }
 rot.install() { rot install --idempotent --apply-live --assumeyes "$@"; return $?; }

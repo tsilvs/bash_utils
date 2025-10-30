@@ -3,10 +3,10 @@
 # (for now, unorganized) Shorthands, Shortcuts & convenience functions Library
 
 # # Get the script's directory
-# SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+# "${BASH_SOURCE[0]}"
 
 # # Source the API library
-# source "$SCRIPT_DIR/lib/repo_api.sh"
+# source "${BASH_SOURCE[0]}/lib/repo_api.sh"
 
 #local install_dir_rel="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 #echo "$(realpath $(dirname "${BASH_SOURCE[0]}"))"

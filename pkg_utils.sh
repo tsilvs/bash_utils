@@ -6,10 +6,8 @@
 
 # Get the script's directory
 
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-
-source "$SCRIPT_DIR/lib/bashlib.sh"
-source "$SCRIPT_DIR/rpm_ostree_utils.sh"
+source "${BASH_SOURCE[0]}/lib/bashlib.sh"
+source "${BASH_SOURCE[0]}/rpm_ostree_utils.sh"
 
 # have_cmd() { command -v "$1" &>/dev/null; }
 
