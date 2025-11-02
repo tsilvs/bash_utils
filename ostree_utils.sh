@@ -56,6 +56,11 @@ ostree.depl.undelpoy() {
 	return $?
 }
 
+# ostree.grub.custom.reapply() {
+# 	 "$@"
+# 	return $?
+# }
+
 # Terminology
 
 # Deployment - a commit that's marked as a bootable version of the OS. Can be referred to by a numerical index (0++).

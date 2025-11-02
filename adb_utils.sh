@@ -9,7 +9,9 @@ adb.u() {
 	adb.users $@
 }
 
-# adb.pair () {
+# adb.pair() {
+# 	 "$@"
+# 	return $?
 # }
 
 adb.diff.apps() {
@@ -88,4 +90,13 @@ adb.ufa() {
 
 # jq '.[]["removal"]' --raw-output 0x192/universal-android-debloater/resources/assets/uad_lists.json | sort -u
 # adb.ufu $device $uid $(jq '.[] | select(.removal=="Recommended") | select(.id | match(".*google.*")) | .id' --raw-output 0x192/universal-android-debloater/resources/assets/uad_lists.json)
+
+export -f adb.users
+export -f adb.u
+# export -f adb.pair
+export -f adb.diff.apps
+export -f adb.ifu
+export -f adb.ifa
+export -f adb.ufu
+export -f adb.ufa
 
