@@ -43,3 +43,10 @@ ExecStart=/bin/bash -l -c '\
 [Install]
 WantedBy=graphical-session.target
 
+# sudo mkdir -p /etc/systemd/user
+# sudo cp gsconnect-cache-clear.service /etc/systemd/user/
+# systemctl --user enable gsconnect-cache-clear.service
+# # Create preset file
+# sudo mkdir -p /etc/systemd/user-preset
+# echo "enable gsconnect-cache-clear.service" | sudo tee /etc/systemd/user-preset/90-gsconnect.preset
+
