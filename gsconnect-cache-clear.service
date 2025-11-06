@@ -25,7 +25,7 @@ ExecStart=/bin/bash -l -c '\
 	shopt -s nullglob; \
 	for f in /etc/bashrc.d/*/bash_utils/gnome_utils.sh \
 					/etc/profile.d/*/bash_utils/gnome_utils.sh \
-					~/.config/bash/gnome_utils.sh \
+					~/.config/bash/*/bash_utils/gnome_utils.sh \
 					~/.profile.d/*/bash_utils/gnome_utils.sh \
 					~/.bashrc.d/*/bash_utils/gnome_utils.sh \
 					~/.bash_functions; do \
