@@ -1,0 +1,45 @@
+[Unit]
+Description=Clear GSConnect device cache
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -l -c '\
+	# Check if GSConnect extension is active\
+	if ! gdbus introspect --session \
+			--dest org.gnome.Shell.Extensions.GSConnect \
+			--object-path /org/gnome/Shell/Extensions/GSConnect \
+			>/dev/null 2>&1; then \
+		echo "GSConnect not active, skipping"; \
+		exit 0; \
+	fi; \
+	\
+	# Try to call function (may already be loaded by login shell)\
+	if declare -F gnome.ext.gsconnect.dev.cache.clear >/dev/null 2>&1; then \
+		gnome.ext.gsconnect.dev.cache.clear; \
+		exit 0; \
+	fi; \
+	\
+	# Fallback: source common locations\
+	shopt -s nullglob; \
+	for f in /etc/bashrc.d/*/bash_utils/gnome_utils.sh \
+					/etc/profile.d/*/bash_utils/gnome_utils.sh \
+					~/.config/bash/gnome_utils.sh \
+					~/.profile.d/*/bash_utils/gnome_utils.sh \
+					~/.bashrc.d/*/bash_utils/gnome_utils.sh \
+					~/.bash_functions; do \
+		[[ -f "$f" ]] && source "$f"; \
+	done; \
+	\
+	# Try again after sourcing\
+	if declare -F gnome.ext.gsconnect.dev.cache.clear >/dev/null 2>&1; then \
+		gnome.ext.gsconnect.dev.cache.clear; \
+	else \
+		echo "ERROR: Function not found in any known location"; \
+		exit 0; \
+	fi'
+
+[Install]
+WantedBy=graphical-session.target
+
