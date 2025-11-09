@@ -192,6 +192,16 @@ podman.img.conf() {
 	return $?
 }
 
+podman.img.digest() {
+	podman.img.conf "$@" | jq -r ".Digest"
+	return $?
+}
+
+podman.img.sha() {
+	podman.img.digest "$@"
+	return $?
+}
+
 podman.img.cmd() {
 	local img_name="${1:?"Image Name is required"}"
 	podman.img.conf "${img_name}" | jq -r '.Config.Cmd[0]'
@@ -275,6 +285,8 @@ export -f podman.img.dir
 # export -f args.parse
 # export -f podman.img.ls
 export -f podman.img.conf
+export -f podman.img.digest
+export -f podman.img.sha
 export -f podman.img.cmd
 export -f podman.img.entry
 export -f podman.img.env
