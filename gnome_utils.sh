@@ -40,7 +40,8 @@ gnome.ext.usr.ls() {
 export -f gsettings.ls
 export -f gdm.theme.cursor.set
 export -f gnome.ext.sys.ls
-export -f gnome.ext.user.mvsys
+export -f gnome.ext.usr.ls
+# export -f gnome.ext.user.mvsys
 
 # if there is org.gnome.Shell.Extensions.GSConnect
 
