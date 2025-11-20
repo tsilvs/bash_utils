@@ -83,6 +83,19 @@ podman.cont.cmd() {
 	return $?
 }
 
+podman.cont.env() {
+	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+		echo -e \
+"Usage: ${FUNCNAME[0]} IMG_NAME
+Show container internal environment for current context.
+	--help	Show help";
+		return 0;
+	}
+	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
+	local img_name="${1:?"Image Name is required"}"
+	podman.cont.conf "${img_name}" | jq --raw-output '.Config.Env[]'
+}
+
 podman.cont.id() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
@@ -143,7 +156,6 @@ Options:
 	local img_name="${1:?"Image Name is required"}"
 	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
 }
-
 
 podman.img.id() {
 	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
@@ -268,22 +280,31 @@ Show config location for current context.
 # 	# cat $stdin | xargs podman pull
 # }
 
+# export -f args.parse
+
 export -f podman.commit
 export -f podman.root.dir
+
 export -f podman.conts.manif.path
 export -f podman.conts.manif
+
 export -f podman.cont.manif
-export -f podman.cont.conf
-export -f podman.cont.cmd
 export -f podman.cont.id
 export -f podman.cont.dir
+export -f podman.cont.conf
+# export -f podman.cont.digest
+# export -f podman.cont.sha
+export -f podman.cont.cmd
+# export -f podman.cont.entry
+export -f podman.cont.env
+# export -f podman.img.mv.root
+
 export -f podman.imgs.manif.path
 export -f podman.imgs.manif
+
 export -f podman.img.manif
 export -f podman.img.id
 export -f podman.img.dir
-# export -f args.parse
-# export -f podman.img.ls
 export -f podman.img.conf
 export -f podman.img.digest
 export -f podman.img.sha
@@ -291,6 +312,8 @@ export -f podman.img.cmd
 export -f podman.img.entry
 export -f podman.img.env
 export -f podman.img.mv.root
+# export -f podman.img.ls
+
 export -f podman.conf.path
 # export -f podman.conf.merge
 # export -f podman.img.importAll
