@@ -64,6 +64,12 @@ chromium.search.engines() {
 	return $?
 }
 
+# chromium.cache.clearAll() {
+# 	rm -r ~/.config/chromium/*/Service Worker/CacheStorage
+# 	#  "$@"
+# 	return $?
+# }
+
 # chromium.search.keywords.merge() {
 # 	local func_name="${FUNCNAME[0]}"
 

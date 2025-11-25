@@ -120,6 +120,16 @@ Show container location for current context.
 	echo "$(podman.root.dir)/overlay-containers/$(podman.cont.id "${container_name}")"
 }
 
+podman.imgs.ls() {
+	podman image ls --format '{{.Repository}}:{{.Tag}}'
+	return $?
+}
+
+podman.imgs.pullAll() {
+	podman.imgs.ls | xargs -n 1 podman pull
+	return $?
+}
+
 podman.imgs.manif.path() {
 	[[ ( " $* " =~ ' --help ' ) ]] && {
 		echo -e \
@@ -189,7 +199,7 @@ Show image location for current context.
 # 	# It's probably supposed to somehow support at least --help option and print a helptext that uses a structured list of params and their descriptions, maybe in a JSON
 # }
 
-# podman.img.ls() {
+# podman.img.fs.ls() {
 # 	# Supposed to just list files inside on an OCI container image
 # 	read imagename lsopts <<< $(args.parse "imagename,lsopts" "$@")
 # 	local mountpoint="$(podman image mount "${imagename}")"
@@ -312,7 +322,7 @@ export -f podman.img.cmd
 export -f podman.img.entry
 export -f podman.img.env
 export -f podman.img.mv.root
-# export -f podman.img.ls
+# export -f podman.img.fs.ls
 
 export -f podman.conf.path
 # export -f podman.conf.merge

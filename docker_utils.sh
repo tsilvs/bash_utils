@@ -29,10 +29,12 @@ docker.img.env() {
 # echo "Image metadata: /var/lib/docker/image/overlay2/imagedb/content/$image_id"
 
 
-docker.img.exportAll() {
-	:
-	# docker images --format docker-daemon:{{.Repository}}:{{.Tag}}
-}
+# docker.img.exportAll() {
+# 	:
+# 	# docker images --format docker-daemon:{{.Repository}}:{{.Tag}}
+# }
 
-
+# docker image list --all --format '{{.Repository}}:{{.Tag}}' >> ~/Documents/repo/OCI-images.list
+# docker container list --format '{{.Names}}' | xargs -n 1 docker container remove
+# docker image list --format '{{.Repository}}:{{.Tag}}' | xargs -n 1 docker image rm --force
 
