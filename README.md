@@ -71,3 +71,10 @@ scope_path="whatever/you/chose" git_remote="origin" git -C "${scope_path}" pull 
 + [ ] Proper packaging with `.rpm`, `.deb`, `pkgbuild`, `flatpak`, `bpkg`, `podman` image or any other suitable packaging tool
 + [ ] UI with `yad`
 + [ ] Proper i18n with separate locale files
+
+# Cool new features
+
+Flatpak aliases generator! With groupping by GNOME App Folders!
+
+`ls` diff table generator!
+

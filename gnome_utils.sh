@@ -145,3 +145,6 @@ export -f gnome.ext.gsconnect.dev.refresh
 export -f gnome.ext.gsconnect.dev.cache.clear
 
 fi
+
+# dconf dump /org/gnome/desktop/app-folders/folders/
+

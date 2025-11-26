@@ -88,6 +88,7 @@ flatpak.gh.url() {
 	(( verbose )) && echo "Downloading from: $url"
 
 	echo "$url"
+	return $?
 }
 
 # flatpak.gh.get() {
@@ -102,3 +103,82 @@ flatpak.gh.url() {
 # 	curl -L "$url" -o "$file"
 # 	echo "Downloaded to $file"
 # }
+
+# flatpak list --app --columns=application | xargs -I{} flatpak info --show-metadata {} 2>/dev/null
+
+flatpak.alias.gen() {
+	local app="" scope="--system" cmd=""
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			-u|--user) scope="--user"; shift ;;
+			-s|--system) scope="--system"; shift ;;
+			--command=*) cmd="${1#*=}"; shift ;;
+			*) app="$1"; shift ;;
+		esac
+	done
+	
+	[[ -z "$app" ]] && { echo "Error: app required" >&2; return 1; }
+	
+	if [[ -z "$cmd" ]]; then
+		cmd=$(flatpak info --show-metadata "$app" $scope 2>/dev/null | grep '^command=' | cut -d= -f2)
+		[[ -z "$cmd" ]] && { echo "Error: no command found for $app" >&2; return 1; }
+	fi
+	
+	echo "$cmd() { flatpak run $scope --command=$cmd --file-forwarding $app \"\$@\"; return \$?; }"
+}
+
+flatpak.alias.gen.all() {
+	local scope="" group_folders=false
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			-u|--user) scope="--user"; shift ;;
+			-s|--system) scope="--system"; shift ;;
+			-g|--group-by-folders) group_folders=true; shift ;;
+			*) shift ;;
+		esac
+	done
+	
+	if [[ "$group_folders" == true ]]; then
+		local folder_map=$(mktemp)
+		local folder="" folder_order=0 apps_buffer=""
+		
+		while IFS= read -r line; do
+			if [[ "$line" == "["*"]"* && "$line" == *"["*"-"* ]]; then
+				((folder_order++))
+				folder=""
+				apps_buffer=""
+			elif [[ "$line" == "apps="* ]]; then
+				apps_buffer=$(echo "$line" | cut -d= -f2 | tr -d "[]'\" ")
+			elif [[ "$line" == "name="* ]]; then
+				folder=$(echo "$line" | cut -d= -f2 | tr -d "\"'")
+				if [[ -n "$apps_buffer" && -n "$folder" ]]; then
+					IFS=, read -ra apps <<< "$apps_buffer"
+					for app in "${apps[@]}"; do
+						app="${app%.desktop}"
+						[[ -n "$app" ]] && printf "%03d:%s:%s\n" "$folder_order" "$app" "$folder" >> "$folder_map"
+					done
+					apps_buffer=""
+				fi
+			fi
+		done < <(dconf dump /org/gnome/desktop/app-folders/folders/)
+		
+		local output=$(mktemp)
+		flatpak list --app --columns=application $scope | while read -r app; do
+			local entry=$(grep ":${app}:" "$folder_map" | head -1)
+			local func=$(flatpak.alias.gen $scope "$app")
+			if [[ -n "$entry" ]]; then
+				echo "$entry|$func" >> "$output"
+			else
+				echo "999:!not found:!not found|$func" >> "$output"
+			fi
+		done
+		
+		sort -t'|' -k1,1 "$output" | awk -F'|' 'BEGIN{prev=""} {split($1,a,":"); folder=a[3]; if(folder!=prev){if(prev!="")print ""; print "# "folder; prev=folder} print $2}'
+		rm -f "$output" "$folder_map"
+	else
+		flatpak list --app --columns=application $scope | while read -r app; do
+			flatpak.alias.gen $scope "$app"
+		done
+	fi
+}
+

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+source "${SCRIPT_DIR}/aliases.flatpak.sh"
+
 neofetch.() {
 	/usr/bin/fastfetch "$@"
 	return $?
@@ -28,6 +32,73 @@ sysinfo.fetch() {
 ls.() {
 	ls --color --group-directories-first "$@"
 	return $?
+}
+
+ls.join() {
+	local path_A path_B full_path=false join_type=""
+	local display_A display_B
+	
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+			-i|--inner) join_type="inner"; shift ;;
+			-o|--outer) join_type="outer"; shift ;;
+			-f|--full-path) full_path=true; shift ;;
+			-*) echo "Unknown option: $1" >&2; return 1 ;;
+			*)
+				if [[ -z "$path_A" ]]; then
+					path_A="$1"
+					display_A="${1/#$HOME/\~}"
+				elif [[ -z "$path_B" ]]; then
+					path_B="$1"
+					display_B="${1/#$HOME/\~}"
+				else
+					echo "Too many arguments" >&2; return 1
+				fi
+				shift ;;
+		esac
+	done
+	
+	[[ -z "$join_type" ]] && { echo "Usage: ls.join [--inner|--outer] [-f|--full-path] path_A path_B" >&2; return 1; }
+	[[ -z "$path_A" || -z "$path_B" ]] && { echo "Usage: ls.join [--inner|--outer] [-f|--full-path] path_A path_B" >&2; return 1; }
+	[[ -d "$path_A" ]] || { echo "Error: $path_A not a directory" >&2; return 1; }
+	[[ -d "$path_B" ]] || { echo "Error: $path_B not a directory" >&2; return 1; }
+	
+	path_A="${path_A%/}"
+	path_B="${path_B%/}"
+	display_A="${display_A%/}"
+	display_B="${display_B%/}"
+	
+	echo "| Path A | Path B |"
+	echo "|--------|--------|"
+	
+	if [[ "$join_type" == "inner" ]]; then
+		comm -12 <(ls -1 "$path_A" | sort) <(ls -1 "$path_B" | sort) |
+			if [[ "$full_path" == true ]]; then
+				awk -v a="$display_A" -v b="$display_B" '{ print "| `" a "/" $0 "` | `" b "/" $0 "` |" }'
+			else
+				awk '{ print "| `" $0 "` | `" $0 "` |" }'
+			fi
+	else
+		if [[ "$full_path" == true ]]; then
+			comm -3 <(ls -1 "$path_A" | sort) <(ls -1 "$path_B" | sort) |
+				awk -v a="$display_A" -v b="$display_B" '
+					/^\t/ { sub(/^\t/, ""); print "| | `" b "/" $0 "` |"; next }
+					{ print "| `" a "/" $0 "` | |" }
+				'
+			
+			comm -12 <(ls -1 "$path_A" | sort) <(ls -1 "$path_B" | sort) |
+				awk -v a="$display_A" -v b="$display_B" '{ print "| `" a "/" $0 "` | `" b "/" $0 "` |" }'
+		else
+			comm -3 <(ls -1 "$path_A" | sort) <(ls -1 "$path_B" | sort) |
+				awk '
+					/^\t/ { sub(/^\t/, ""); print "| | `" $0 "` |"; next }
+					{ print "| `" $0 "` | |" }
+				'
+			
+			comm -12 <(ls -1 "$path_A" | sort) <(ls -1 "$path_B" | sort) |
+				awk '{ print "| `" $0 "` | `" $0 "` |" }'
+		fi
+	fi
 }
 
 lsw() {
@@ -106,35 +177,13 @@ af.flat.template() {
 	return $?
 }
 
-keepassxc-cli() {
-	flatpak run --command="keepassxc-cli" --file-forwarding org.keepassxc.KeePassXC "$@"
-	return $?
-}
-
-codium() {
-	flatpak run --command=com.vscodium.codium --file-forwarding com.vscodium.codium "$@"
-	return $?
-}
-
-code() {
-	codium "$@"
-	return $?
-}
-
 # npm() {
 # 	pnpm "$@"
 # 	return $?
 # }
 
-chromium() {
-	flatpak run --command=chromium --file-forwarding io.github.ungoogled_software.ungoogled_chromium "$@"
-	return $?
-}
 
-vlc() {
-	flatpak run --command=vlc --file-forwarding org.videolan.VLC "$@"
-	return $?
-}
+
 
 # #### For distrobox apps
 
@@ -177,4 +226,6 @@ vlc() {
 # alias pdfinfotb='toolbox run --container fedora pdfinfo'
 # alias pdfseparatetb='toolbox run --container fedora pdfseparate'
 # alias pdftocairotb='toolbox run --container fedora pdftocairo'
-# alias pdftopstb='toolbox run --container fedora pdftops'
+# alias pdftopstb='toolbox run --container fedora pdftops
+
+
