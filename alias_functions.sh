@@ -138,13 +138,78 @@ md.() {
 }
 
 mktouch() {
-	if [ $# -eq 0 ]; then
-		echo "No file paths supplied."
-		return 1
-	fi
-	for filepath in "$@"; do
-		mkdir -p "$(dirname "$filepath")" && touch "$filepath"
+	local paths=()
+	local show_tree=false
+	local dry_run=false
+	local temp_dir=""
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help)
+				echo "Usage: ${FUNCNAME[0]} [OPTIONS] [--path|-p] <path> [<path> ...]"
+				echo "Creates directories and files for given paths."
+				echo ""
+				echo "Options:"
+				echo "  -p, --path <path>    Specify path(s) to create"
+				echo "  -t, --tree           Show tree of created structure"
+				echo "  -n, --dryrun         Create in temp directory and show tree"
+				echo "  -h, --help           Display this help message"
+				echo ""
+				echo "Examples:"
+				echo "  ${FUNCNAME[0]} dir/file.txt"
+				echo "  ${FUNCNAME[0]} dir/            # Creates only directory"
+				echo "  ${FUNCNAME[0]} -t -p dir1/file1.txt dir2/file2.txt"
+				echo "  ${FUNCNAME[0]} -n path/{a,b,c}.txt"
+				return 0
+				;;
+			-t|--tree)
+				show_tree=true
+				;;
+			-n|--dryrun)
+				dry_run=true
+				show_tree=true
+				;;
+			-p|--path)
+				shift
+				[[ $# -eq 0 ]] && echo "Error: --path requires an argument" && return 1
+				paths+=("$1")
+				;;
+			-*)
+				echo "Error: Unknown option $1" && return 1
+				;;
+			*)
+				paths+=("$1")
+				;;
+		esac
+		shift
 	done
+	
+	[[ ${#paths[@]} -eq 0 ]] && echo "Error: No paths specified" && return 1
+	
+	local base_dir="."
+	if $dry_run; then
+		temp_dir=$(mktemp -d)
+		base_dir="$temp_dir"
+		echo "Dry run in: ${temp_dir}"
+	fi
+	
+	for path in "${paths[@]}"; do
+		if [[ "$path" == */ ]]; then
+			mkdir -p "${base_dir}/${path}"
+		else
+			local dir=$(dirname "${base_dir}/${path}")
+			[[ ! -d "$dir" ]] && mkdir -p "$dir"
+			touch "${base_dir}/${path}"
+		fi
+	done
+	
+	if $show_tree && command -v tree &> /dev/null; then
+		tree "$base_dir" -F --noreport --dirsfirst
+	elif $show_tree; then
+		find "$base_dir" -print | sed -e "s;${base_dir};.;g;1d;s/^\.//;s/[^\/]*\//|  /g;s/|  \([^|]\)/+--\1/g"
+	fi
+	
+	$dry_run && rm -rf "$temp_dir"
 }
 
 rename.() {
