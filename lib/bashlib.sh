@@ -6,7 +6,7 @@
 # SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 # # Source the API library
-# source "${SCRIPT_DIR}/lib/repo_api.sh"
+# source "${$(dirname "${BASH_SOURCE[0]}")}/lib/repo_api.sh"
 
 #local install_dir_rel="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 #echo "$(realpath $(dirname "${BASH_SOURCE[0]}"))"

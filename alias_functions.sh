@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-source "${SCRIPT_DIR}/aliases.flatpak.sh"
+source "${$(dirname "${BASH_SOURCE[0]}")}/aliases.flatpak.sh"
 
 neofetch.() {
 	/usr/bin/fastfetch "$@"
