@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-# add_ssh_keys () {
-# 	ssh-add -l || eval "$(ssh-agent -s)";
-# 	for key in ~/.ssh/*;
-# 	do
-# 		[[ -f "$key" && $(head -n1 "$key") =~ "PRIVATE KEY" ]] && ssh-add "$key";
-# 	done
-# }
+ssh.keys.add() {
+	ssh-add -l || eval "$(ssh-agent -s)"
+	for key in ~/.ssh/*; do
+		[[ -f "$key" && $(head -n1 "$key") =~ "PRIVATE KEY" ]] && ssh-add "$key"
+	done
+}
+
+export -f ssh.keys.add
 
 # ssh.fs.diff() {
 # 	local user="${1:-"$(id -un)"}"
