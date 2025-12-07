@@ -8,8 +8,8 @@
 
 # SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-source "${$(dirname "${BASH_SOURCE[0]}")}/lib/bashlib.sh"
-source "${$(dirname "${BASH_SOURCE[0]}")}/rpm_ostree_utils.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/bashlib.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/rpm_ostree_utils.sh"
 
 # have_cmd() { command -v "$1" &>/dev/null; }
 

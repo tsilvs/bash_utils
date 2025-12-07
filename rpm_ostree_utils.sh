@@ -2,7 +2,7 @@
 
 # SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-source "${$(dirname "${BASH_SOURCE[0]}")}/lib/bashlib.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/bashlib.sh"
 
 rot() { rpm-ostree "$@"; return $?; }
 rot.install() { rot install --idempotent --apply-live --assumeyes "$@"; return $?; }
