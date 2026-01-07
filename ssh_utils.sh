@@ -7,7 +7,22 @@ ssh.keys.add() {
 	done
 }
 
+ssh.pass() {
+	ssh \
+		-o PasswordAuthentication=yes \
+		-o PreferredAuthentications=keyboard-interactive,password \
+		-o PubkeyAuthentication=no "$@"
+	return $?
+}
+
+ssh.p() {
+	ssh.pass "$@"
+	return $?
+}
+
 export -f ssh.keys.add
+export -f ssh.pass
+export -f ssh.p
 
 # ssh.fs.diff() {
 # 	local user="${1:-"$(id -un)"}"
