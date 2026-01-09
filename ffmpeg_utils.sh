@@ -155,4 +155,173 @@
 #     fi
 # }
 
+# WARNING: DO NOT USE THIS!
 # main "$@"
+
+# # ID3 tag from filename regex pattern
+# tag_from_filename() {
+#   local pattern='(.+) - (.+) - (.+)\.mp3$'
+#   local dryrun=false
+  
+#   while [[ $# -gt 0 ]]; do
+#     case $1 in
+#       -h|--help)
+#         cat <<EOF
+# Usage: tag_from_filename [OPTIONS] [FILES...]
+
+# Extract artist/album/title from filenames using regex, write ID3 tags.
+
+# Options:
+#   -h, --help           Show help
+#   -n, --dryrun         Show actions without executing
+#   -r, --regex PATTERN  Regex with 3 capture groups: artist, album, title
+#                        Default: '(.+) - (.+) - (.+)\.mp3$'
+
+# Example:
+#   tag_from_filename -r '^(\w+)-(\w+)-(.+)\.mp3$' *.mp3
+# EOF
+#         return 0
+#         ;;
+#       -n|--dryrun) dryrun=true; shift ;;
+#       -r|--regex) pattern="$2"; shift 2 ;;
+#       *) break ;;
+#     esac
+#   done
+  
+#   for f in "$@"; do
+#     [[ "$f" =~ $pattern ]] || { echo "Skip: $f (no match)"; continue; }
+    
+#     local artist="${BASH_REMATCH[1]}"
+#     local album="${BASH_REMATCH[2]}"
+#     local title="${BASH_REMATCH[3]}"
+    
+#     if $dryrun; then
+#       echo "Would tag: $f -> artist='$artist' album='$album' title='$title'"
+#     else
+#       ffmpeg -i "$f" -metadata artist="$artist" -metadata album="$album" \
+#         -metadata title="$title" -codec copy -y "tagged_$f" 2>/dev/null && \
+#         mv "tagged_$f" "$f"
+#       echo "Tagged: $f"
+#     fi
+#   done
+# }
+
+# # Organize files by metadata into folder structure
+# organize_by_metadata() {
+#   local pattern='${artist}/${album}/${title}.mp3'
+#   local dryrun=false
+  
+#   while [[ $# -gt 0 ]]; do
+#     case $1 in
+#       -h|--help)
+#         cat <<EOF
+# Usage: organize_by_metadata [OPTIONS] [FILES...]
+
+# Read ID3 tags, organize into folder structure.
+
+# Options:
+#   -h, --help           Show help
+#   -n, --dryrun         Show actions without executing
+#   -r, --pattern STR    Path pattern with variables: artist, album, title
+#                        Default: '\${artist}/\${album}/\${title}.mp3'
+
+# Example:
+#   organize_by_metadata -r '\${album}/\${title}.mp3' *.mp3
+# EOF
+#         return 0
+#         ;;
+#       -n|--dryrun) dryrun=true; shift ;;
+#       -r|--pattern) pattern="$2"; shift 2 ;;
+#       *) break ;;
+#     esac
+#   done
+  
+#   for f in "$@"; do
+#     local artist=$(ffprobe -v error -show_entries format_tags=artist \
+#       -of default=noprint_wrappers=1:nokey=1 "$f" 2>/dev/null)
+#     local album=$(ffprobe -v error -show_entries format_tags=album \
+#       -of default=noprint_wrappers=1:nokey=1 "$f" 2>/dev/null)
+#     local title=$(ffprobe -v error -show_entries format_tags=title \
+#       -of default=noprint_wrappers=1:nokey=1 "$f" 2>/dev/null)
+    
+#     [[ -z "$artist" || -z "$album" || -z "$title" ]] && \
+#       { echo "Skip: $f (missing tags)"; continue; }
+    
+#     local target=$(eval echo "$pattern")
+#     local target_dir=$(dirname "$target")
+    
+#     if $dryrun; then
+#       echo "Would move: $f -> $target"
+#     else
+#       mkdir -p "$target_dir"
+#       mv "$f" "$target"
+#       echo "Moved: $f -> $target"
+#     fi
+#   done
+# }
+
+# # Combined: tag from filename, then organize
+# tag_and_organize() {
+#   local tag_pattern='(.+) - (.+) - (.+)\.mp3$'
+#   local org_pattern='${artist}/${album}/${title}.mp3'
+#   local dryrun=false
+  
+#   while [[ $# -gt 0 ]]; do
+#     case $1 in
+#       -h|--help)
+#         cat <<EOF
+# Usage: tag_and_organize [OPTIONS] [FILES...]
+
+# Extract tags from filenames, write ID3, organize into folders.
+
+# Options:
+#   -h, --help              Show help
+#   -n, --dryrun            Show actions without executing
+#   -r, --regex PATTERN     Filename regex (3 groups: artist, album, title)
+#   -p, --pattern PATH      Output path pattern
+  
+# Default regex: '(.+) - (.+) - (.+)\.mp3$'
+# Default pattern: '\${artist}/\${album}/\${title}.mp3'
+# EOF
+#         return 0
+#         ;;
+#       -n|--dryrun) dryrun=true; shift ;;
+#       -r|--regex) tag_pattern="$2"; shift 2 ;;
+#       -p|--pattern) org_pattern="$2"; shift 2 ;;
+#       *) break ;;
+#     esac
+#   done
+  
+#   for f in "$@"; do
+#     [[ "$f" =~ $tag_pattern ]] || { echo "Skip: $f (no match)"; continue; }
+    
+#     local artist="${BASH_REMATCH[1]}"
+#     local album="${BASH_REMATCH[2]}"
+#     local title="${BASH_REMATCH[3]}"
+#     local target=$(eval echo "$org_pattern")
+#     local target_dir=$(dirname "$target")
+    
+#     if $dryrun; then
+#       echo "Would process: $f"
+#       echo "  Tag: artist='$artist' album='$album' title='$title'"
+#       echo "  Move: -> $target"
+#     else
+#       ffmpeg -i "$f" -metadata artist="$artist" -metadata album="$album" \
+#         -metadata title="$title" -codec copy -y "tagged_$f" 2>/dev/null || \
+#         { echo "Failed: $f"; continue; }
+#       mkdir -p "$target_dir"
+#       mv "tagged_$f" "$target"
+#       echo "Processed: $f -> $target"
+#     fi
+#   done
+# }
+
+# # Dryrun first
+# tag_and_organize -n -r '^(\w+)-(\w+)-(.+)\.mp3$' *.mp3
+
+# # Execute
+# tag_and_organize -r '^(\w+)-(\w+)-(.+)\.mp3$' *.mp3
+
+# # Custom output pattern
+# tag_and_organize -p 'Music/${artist}/${title}.mp3' *.mp3
+
