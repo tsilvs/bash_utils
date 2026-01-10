@@ -2,77 +2,165 @@
 
 # `_IV` variable suffix stands for `input validation`
 
+#!/usr/bin/env bash
+
 git.dir.check() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} REPO_PATH
-Checks if the directory is a git repo.
-	--help	Displays this help message"
+	local repo_path="" show_help=false dry_run=false
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help) show_help=true; shift ;;
+			-n|--dry-run) dry_run=true; shift ;;
+			-*) echo "Unknown option: $1" >&2; return 1 ;;
+			*) repo_path="$1"; shift ;;
+		esac
+	done
+	
+	${show_help} && {
+		cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] REPO_PATH
+		Checks if directory is git repo.
+		
+		Options:
+		  -h, --help       Display this help message
+		  -n, --dry-run    Show command without executing
+		EOF
 		return 0
 	}
-	local repo_path="${1:?"Repo path is required"}"
-	git -C "${repo_path}" rev-parse >/dev/null 2>&1
-	return $?
+	
+	[[ -z "${repo_path}" ]] && { echo "Repo path required" >&2; return 1; }
+	
+	local run="git -C '${repo_path}' rev-parse >/dev/null 2>&1"
+	${dry_run} && { echo "${run}"; return 0; }
+	eval "${run}"
 }
 
 git.url.to_dir() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} REMOTE_URL
-Extracts directory name from a git remote url.
-	--help	Displays this help message"
+	local remote_address="" show_help=false
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help) show_help=true; shift ;;
+			-*) echo "Unknown option: $1" >&2; return 1 ;;
+			*) remote_address="$1"; shift ;;
+		esac
+	done
+	
+	${show_help} && {
+		cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] REMOTE_URL
+		Extracts directory name from git remote url.
+		
+		Options:
+		  -h, --help    Display this help message
+		EOF
 		return 0
 	}
-	local remote_address="${1:?"Remote address is required"}"
-	#local author_name="$(basename "$(dirname "${remote_address}")")"
+	
+	[[ -z "${remote_address}" ]] && { echo "Remote address required" >&2; return 1; }
+	
 	local author_name="$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
 	local project_name="$(basename "${remote_address}" .git)"
-	local target_dir="${author_name}/${project_name}"
-	echo -e "${target_dir}"
+	echo "${author_name}/${project_name}"
 }
 
 git.clone.to_dir() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} REMOTE_URL [REPO_DIR]
-Clones a remote repo to a local dir.
-	--help	Displays this help message"
+	local remote_address="" target_dir="" show_help=false dry_run=false
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help) show_help=true; shift ;;
+			-n|--dry-run) dry_run=true; shift ;;
+			-d|--dir) target_dir="$2"; shift 2 ;;
+			-*) echo "Unknown option: $1" >&2; return 1 ;;
+			*) 
+				[[ -z "${remote_address}" ]] && { remote_address="$1"; shift; continue; }
+				[[ -z "${target_dir}" ]] && { target_dir="$1"; shift; continue; }
+				shift
+				;;
+		esac
+	done
+	
+	${show_help} && {
+		cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] REMOTE_URL [TARGET_DIR]
+		Clones remote repo to local dir.
+		
+		Options:
+		  -h, --help         Display this help message
+		  -n, --dry-run      Show commands without executing
+		  -d, --dir DIR      Target directory path
+		EOF
 		return 0
 	}
-	local remote_address="${1:?"Remote address is required"}"
-	local target_dir_input="${2:-"$(git.url.to_dir "${remote_address}")"}"
-	local target_dir_IV="${target_dir_input:?"Target Dir is required"}"
-	local target_dir
-	# local repo_root_input="${3:-$(pwd)}"
-	local repo_root_input="$(pwd)"
-	target_dir="$(realpath -m "${target_dir_IV}")"
-	mkdir -p "${target_dir}"
-	git -C "${repo_root_input}" clone "${remote_address}" "${target_dir}"
+	
+	[[ -z "${remote_address}" ]] && { echo "Remote address required" >&2; return 1; }
+	[[ -z "${target_dir}" ]] && target_dir="$(git.url.to_dir "${remote_address}")"
+	
+	local repo_root="$(pwd)"
+	target_dir="$(realpath -m "${target_dir}")"
+	
+	local run="mkdir -p '${target_dir}' && git -C '${repo_root}' clone '${remote_address}' '${target_dir}'"
+	${dry_run} && { echo "${run}"; return 0; }
+	eval "${run}"
 }
 
 git.clone.list() {
-	[[ ($# -eq 0) || " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} LIST_FILE_PATH [REPO_ROOT]
-Clones a list of remote repos to a local dir.
-	--help	Displays this help message"
+	local list_file="" repo_root="" show_help=false dry_run=false
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help) show_help=true; shift ;;
+			-n|--dry-run) dry_run=true; shift ;;
+			-r|--root) repo_root="$2"; shift 2 ;;
+			-*) echo "Unknown option: $1" >&2; return 1 ;;
+			*) 
+				[[ -z "${list_file}" ]] && { list_file="$1"; shift; continue; }
+				[[ -z "${repo_root}" ]] && { repo_root="$1"; shift; continue; }
+				shift
+				;;
+		esac
+	done
+	
+	${show_help} && {
+		cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] LIST_FILE [REPO_ROOT]
+		Clones list of remote repos to local dir.
+		
+		Options:
+		  -h, --help         Display this help message
+		  -n, --dry-run      Show commands without executing
+		  -r, --root DIR     Repository root directory
+		EOF
 		return 0
 	}
-	local list_file_path="${1:?"List file path is required"}"
-	[[ -f "${list_file_path}" ]] || {
-		echo "List file does not exist"
-		return 1
-	}
-	local repo_root_input="${2:-$(pwd)}"
-	local repo_root="$(realpath -m "${repo_root_input}")"
+	
+	[[ -z "${list_file}" ]] && { echo "List file path required" >&2; return 1; }
+	[[ ! -f "${list_file}" ]] && { echo "List file doesn't exist" >&2; return 1; }
+	[[ -z "${repo_root}" ]] && repo_root="$(pwd)"
+	
+	repo_root="$(realpath -m "${repo_root}")"
+	
 	local remote_list=()
 	while IFS= read -r line || [[ -n "$line" ]]; do
-		remote_list+=("$line")
-	done <"${list_file_path}"
+		[[ -n "${line}" ]] && remote_list+=("$line")
+	done <"${list_file}"
+	
 	for remote in "${remote_list[@]}"; do
-		[[ -z "${remote}" ]] && continue
 		local target_dir="${repo_root}/$(git.url.to_dir "${remote}")"
-		git.dir.check "${target_dir}" && { echo "${target_dir} is a Git repo already"; continue; }
-		#git.clone.to_dir "${remote}" "${target_dir}"
-		git.clone.to_dir "${remote}"
+		
+		git.dir.check "${target_dir}" && {
+			echo "${target_dir} is git repo already"
+			continue
+		}
+		
+		local run="mkdir -p '${target_dir}' && git -C '${repo_root}' clone '${remote}' '${target_dir}'"
+		${dry_run} && { echo "${run}"; continue; }
+		eval "${run}"
 	done
 }
+
+
 
 # license.get() {
 # 	local license_code
