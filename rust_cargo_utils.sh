@@ -8,3 +8,4 @@ cargo.allow.exec() {
 	# or use `sudo visudo` to edit `secure_path`
 }
 
+export -f cargo.allow.exec
