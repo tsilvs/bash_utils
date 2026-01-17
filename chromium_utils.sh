@@ -112,6 +112,60 @@ chromium.search.engines() {
 
 #chromium.fonts.merge() {}
 
+chromium.ext.ls() {
+	local profile="Default"
+	local file=""
+	
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help)
+				cat <<- EOF
+				Usage: ${FUNCNAME[0]} [OPTIONS] [PROFILE]
+				List enabled Chromium extensions
+				
+				Options:
+				  -b, --browser BROWSER   Browser prefix (default: chromium)
+				  -p, --profile PROFILE   Profile name (default: Default)
+				  -f, --file FILE         Direct path to Preferences file
+				  -h, --help              Show help
+				
+				Examples:
+				  ${FUNCNAME[0]}
+				  ${FUNCNAME[0]} 'Profile 1'
+				  ${FUNCNAME[0]} -p 'Profile 1'
+				  ${FUNCNAME[0]} -f ~/custom/Preferences
+				EOF
+				return 0
+				;;
+			-p|--profile)
+				profile="$2"
+				shift 2
+				;;
+			-b|--browser)
+				browser="$2"
+				shift 2
+				;;
+			-f|--file)
+				file="$2"
+				shift 2
+				;;
+			*)
+				profile="$1"
+				shift
+				;;
+		esac
+	done
+	
+	local prefs_file="${file:-$HOME/.config/${browser:-chromium}/$profile/Preferences}"
+	
+	[[ ! -f "$prefs_file" ]] && { echo "Error: File not found: $prefs_file" >&2; return 1; }
+	
+	jq -r '.extensions.settings | to_entries[] | select((.value.disable_reasons // []) | length == 0) | "\(.value.manifest.name)|\(.key)"' \
+		"$prefs_file"
+}
+
+
+
 #chromium.ext.merge() {}
 
 #chromium.ext.conf.merge() {}

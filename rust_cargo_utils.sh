@@ -9,4 +9,3 @@ cargo.exec.allow() {
 }
 
 export -f cargo.exec.allow
-
