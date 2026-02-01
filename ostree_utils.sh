@@ -49,7 +49,7 @@ ostree.depl.unpin() {
 	return $?
 }
 
-ostree.depl.undelpoy() {
+ostree.depl.undep() {
 	local di="${1:?"Deployment Index required"}"
 	shift 1
 	ostree "$@" admin undeploy "${di}"

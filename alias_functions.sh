@@ -137,51 +137,6 @@ md.() {
 	return $?
 }
 
-mktouch() {
-	local paths=() show_tree=false dry_run=false
-	
-	while [[ $# -gt 0 ]]; do
-		case "$1" in
-			-h|--help) cat <<-EOF
-				Usage: ${FUNCNAME[0]} [OPTIONS] [--path|-p] <path> [<path> ...]
-				Creates directories and files for given paths.
-				
-				Options:
-				  -p, --path <path>   Specify path(s) to create
-				  -t, --tree          Show tree of created structure
-				  -n, --dryrun        Preview structure without creating
-				  -h, --help          Display this help message
-				
-				Examples:
-				  mktouch dir/file.txt
-				  mktouch dir/         # Creates only directory
-				  mktouch -t -p dir1/file1.txt dir2/file2.txt
-				  mktouch -n path/{a,b,c}.txt
-				EOF
-				return 0 ;;
-			-t|--tree) show_tree=true; shift ;;
-			-n|--dryrun) dry_run=true; show_tree=true; shift ;;
-			-p|--path) shift; [[ $# -eq 0 ]] && echo "Error: --path requires argument" && return 1
-				paths+=("$1"); shift ;;
-			-*) echo "Error: Unknown option $1" && return 1 ;;
-			*) paths+=("$1"); shift ;;
-		esac
-	done
-	
-	[[ ${#paths[@]} -eq 0 ]] && echo "Error: No paths specified" && return 1
-	
-	if $dry_run; then
-		printf '%s\n' "${paths[@]}" | tree --fromfile -F --noreport --dirsfirst
-		return 0
-	fi
-	
-	for path in "${paths[@]}"; do
-		[[ "$path" == */ ]] && mkdir -p "$path" || { mkdir -p "$(dirname "$path")"; touch "$path"; }
-	done
-	
-	$show_tree && tree -F --noreport --dirsfirst
-}
-
 rename.() {
 	prename "$@"
 	return $?
@@ -224,7 +179,6 @@ export -f catp
 export -f lsd.
 export -f eza.
 export -f md.
-export -f mktouch
 export -f rename.
 export -f af.flat.template
 
