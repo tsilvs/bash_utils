@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# TODO
+# Should be reading a config of presets from a cascading config hierarchy
+# and accept call signatures similar to
+# `mktouch presetname`
+# or
+# `mktouch -p presetname`
+
 mktouch() {
 	local deps=(tree)
 	for d in "${deps[@]}"; do
