@@ -1,69 +1,138 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 mktouch() {
-	local paths=() show_tree=false dry_run=false
-	
+	local deps=(tree)
+	for d in "${deps[@]}"; do
+		command -v "$d" >/dev/null 2>&1 || {
+			echo "Error: dependency missing: $d" >&2
+			return 127 2>/dev/null || exit 127
+		}
+	done
+	local paths=() created=()
+	local show_tree=false dry_run=false
+	local prefix=""
+
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-			-h|--help) cat <<-EOF
+			-h|--help)
+				cat <<-EOF
 				Usage: ${FUNCNAME[0]} [OPTIONS] [--path|-p] <path> [<path> ...]
 				Creates directories and files for given paths.
-				
+
 				Options:
-				  -p, --path <path>   Specify path(s) to create
-				  -t, --tree          Show tree of created structure
-				  -n, --dryrun        Preview structure without creating
-				  -h, --help          Display this help message
-				
-				Examples:
-				  mktouch dir/file.txt
-				  mktouch dir/         # Creates only directory
-				  mktouch -t -p dir1/file1.txt dir2/file2.txt
-				  mktouch -n path/{a,b,c}.txt
+					-C, --prefix <dir>  Prefix all paths (git -C style)
+					-t, --tree          Show tree of created paths
+					-n, --dry-run       Preview only
+					-h, --help          Help
 				EOF
 				return 0 ;;
+			-C|--prefix)
+				shift; [[ $# -eq 0 ]] && { echo "Error: --prefix needs arg" >&2; return 1; }
+				prefix="$1"; shift ;;
 			-t|--tree) show_tree=true; shift ;;
-			-n|--dryrun) dry_run=true; show_tree=true; shift ;;
-			-p|--path) shift; [[ $# -eq 0 ]] && echo "Error: --path requires argument" && return 1
-				paths+=("$1"); shift ;;
-			-*) echo "Error: Unknown option $1" && return 1 ;;
+			-n|--dry-run) dry_run=true; show_tree=true; shift ;;
+			--) shift; break ;;
+			-*) echo "Error: unknown option $1" >&2; return 1 ;;
 			*) paths+=("$1"); shift ;;
 		esac
 	done
-	
-	[[ ${#paths[@]} -eq 0 ]] && echo "Error: No paths specified" && return 1
-	
+	paths+=("$@")
+	[[ ${#paths[@]} -eq 0 ]] && { echo "Error: no paths" >&2; return 1; }
+
+	if [[ -n "$prefix" ]]; then
+		paths=("${paths[@]/#/$prefix/}")
+	fi
+
 	if $dry_run; then
-		printf '%s\n' "${paths[@]}" | tree --fromfile -F --noreport --dirsfirst
+		printf '%s\n' "${paths[@]}" \
+		| tree --fromfile -F --noreport --dirsfirst
 		return 0
 	fi
-	
-	for path in "${paths[@]}"; do
-		[[ "$path" == */ ]] && mkdir -p "$path" || { mkdir -p "$(dirname "$path")"; touch "$path"; }
+
+	for p in "${paths[@]}"; do
+		if [[ "$p" == */ ]]; then
+			mkdir -p "$p"
+		else
+			mkdir -p "$(dirname -- "$p")"
+			touch "$p"
+		fi
+		created+=("$p")
 	done
-	
-	$show_tree && tree -F --noreport --dirsfirst
+
+	$show_tree && printf '%s\n' "${created[@]}" \
+		| tree --fromfile -F --noreport --dirsfirst
 }
 
-# Git repo basics
-mktouch.git() { mktouch "$@" .gitignore .github/FUNDING.yml README.md CODE_OF_CONDUCT.md CONTRIBUTING.md PUBLISH.md TESTS.md LICENSE; }
+# ---- presets (compact expansions) -------------------------------
 
-# VSCode configs
+mktouch.git() {
+	mktouch "$@" \
+		README.md \
+		LICENSE \
+		TESTS.md \
+		PUBLISH.md \
+		CONTRIBUTING.md \
+		CODE_OF_CONDUCT.md \
+		.gitignore \
+		.github/FUNDING.yml
+}
+
 mktouch.vscode() { mktouch "$@" .vscode/{extensions.json,json.code-snippets,markdown.code-snippets,settings.json}; }
 
-# Docs structure
-mktouch.docs() { mktouch "$@" doc/dev/{0.std/{,core/,front/{,html/,pug/,css/,ts/,js/},back/,data/,infra/}README.md,1.req/{,1.US/,2.UC/,3.BRD/,4.SDD/}README.md,2.plan/README.md}; }
+mktouch.docs() {
+	mktouch "$@" doc/dev/{0.std/{README.md,core/,front/{html,pug,css,ts,js}/,back/,data/,infra/},1.req/{README.md,{1.US,2.UC,3.BRD,4.SDD}/},2.plan/README.md}
+}
 
-# Front dist/src (full)
-mktouch.front_full() { mktouch "$@" dist/{html/pages/,css/{0.util/,1.cmp/{_1.icon,_2.btn,_3.card,_4.list,_5.form}.css,2.layout/_0.tab.css,3.page/{_1.landscape,_2.portrait}.css,4.theme/{_1.dark,_2.light}.css,base.css},js/,media/{aud/,vid/,img/icon.svg},schema/,_locales/{ru,ua,rs,pl,en,pt,fr,it,es,de,cn,jp}/messages.json,manifest.json} src/{pug/{0.cmp/,1.views/,2.pages/},css/{0.util/,1.cmp/{_1.icon,_2.btn,_3.card,_4.list,_5.form}.css,2.layout/_0.tab.css,3.page/{_1.landscape,_2.portrait}.css,4.theme/{_1.dark,_2.light}.css,base.css},ts/,media/{aud/,vid/,img/icon.svg},schema/,_locales/{ru,ua,rs,pl,en,pt,fr,it,es,de,cn,jp}/messages.json} build/{0.main.js,util/handler/{0.pug,1.css,2.ts}.js} src/main.ts; }
+# ---- front split ------------------------------------------------
 
-# Front dist/src (minimal)
-mktouch.front_min() { mktouch "$@" dist/{html/,css/,js/,schema/,_locales/{ru,ua,rs,pl,en,pt,fr,it,es,de,cn,jp}/messages.json,manifest.json} src/{pug/,css/,ts/,schema/,_locales/{ru,ua,rs,pl,en,pt,fr,it,es,de,cn,jp}/messages.json} src/main.ts; }
+mktouch.front.lc() {
+	mktouch "$@" {dist,src}/_locales/{ru,ua,rs,pl,en,pt,fr,it,es,de,cn,jp}/messages.json
+}
 
-# OCI configs
-mktouch.oci() { mktouch "$@" OCI/{Dockerfile,docker.sh,compose.yaml,example.env}; }
+mktouch.front.css() {
+	mktouch "$@" {dist,src}/css/{0.util/,1.cmp/,2.layout/,3.page/,4.theme/,base.css}
+}
 
-# All structures
-mktouch.all() { mk_git "$@"; mk_vscode "$@"; mk_docs "$@"; mk_front_full "$@"; mk_oci "$@"; }
+mktouch.front.html() {
+	mktouch "$@" dist/html/pages/index.html src/pug/{0.cmp/.ph.cmp.pug,1.views/.ph.view.pug,2.pages/index.pug}
+}
+
+mktouch.front.ts() {
+	mktouch "$@" dist/js/main.js src/ts/main.ts
+}
+
+mktouch.front.media() {
+	mktouch "$@" {dist,src}/media/{aud/.ph,vid/.ph,img/icon.svg}
+}
+
+mktouch.front.schema() {
+	mktouch "$@" {dist,src}/schema/.ph.schema.json
+}
+
+mktouch.front.full() {
+	mktouch.front.lc "$@"
+	mktouch.front.css "$@"
+	mktouch.front.html "$@"
+	mktouch.front.ts "$@"
+	mktouch.front.media "$@"
+	mktouch.front.schema "$@"
+	mktouch "$@" dist/manifest.json
+}
+
+mktouch.oci() {
+	mktouch "$@" OCI/{Dockerfile,docker.sh,compose.yaml,example.env}
+}
 
 export -f mktouch
+export -f mktouch.git
+export -f mktouch.vscode
+export -f mktouch.docs
+export -f mktouch.oci
+export -f mktouch.front.lc
+export -f mktouch.front.css
+export -f mktouch.front.html
+export -f mktouch.front.ts
+export -f mktouch.front.media
+export -f mktouch.front.schema
+export -f mktouch.front.full
