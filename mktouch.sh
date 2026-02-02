@@ -7,6 +7,7 @@
 # or
 # `mktouch -p presetname`
 
+
 mktouch() {
 	local deps=(tree)
 	for d in "${deps[@]}"; do
@@ -66,8 +67,11 @@ mktouch() {
 		created+=("$p")
 	done
 
-	$show_tree && printf '%s\n' "${created[@]}" \
+	$show_tree && {
+		printf '%s\n' "${created[@]}" \
 		| tree --fromfile -F --noreport --dirsfirst
+		|| true
+	} || true
 }
 
 # ---- presets (compact expansions) -------------------------------
