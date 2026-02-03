@@ -246,3 +246,127 @@ mdlint.fix.md041() {
 		echo "Fixed: $file"
 	done
 }
+
+mdlint.fix.md025() {
+	# Algorithm:
+	# 1. Take file(s) reported to have MD025 error by `markdownlint`
+	# 2. Demote extra H1 headings by adding an extra '#'
+	# 3. Optionally demote the first H1 with --all/--from-first
+
+	local deps=(awk cmp mktemp mv sed)
+	for d in "${deps[@]}"; do
+		command -v "$d" >/dev/null 2>&1 || {
+			echo "Error: dependency missing: $d" >&2
+			return 127 2>/dev/null || exit 127
+		}
+	done
+
+	local demote_from_first=false
+	local files=()
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			-h|--help)
+				cat <<- EOF
+				Usage: ${FUNCNAME[0]} [OPTIONS] [FILES...]
+				Auto-fix MD025 "Multiple top-level headings in the same document".
+				
+				Options:
+					-h, --help        Show help
+					--all             Demote all H1 headings, including the first
+					--from-first      Same as --all
+				
+				Examples:
+					${FUNCNAME[0]} README.md docs/guide.md
+					${FUNCNAME[0]} --from-first README.md
+					markdownlint "**/*.md" --ignore node_modules 2>&1 | ${FUNCNAME[0]}
+					cat mdlint.report.MD025.paths.list | ${FUNCNAME[0]}
+				EOF
+				return 0
+				;;
+			--all|--from-first)
+				demote_from_first=true
+				shift
+				;;
+			--)
+				shift
+				break
+				;;
+			-*)
+				echo "Error: unknown option: $1" >&2
+				return 1
+				;;
+			*)
+				files+=("$1")
+				shift
+				;;
+		esac
+	done
+
+	if [[ $# -gt 0 ]]; then
+		files+=("$@")
+	fi
+
+	if [[ ${#files[@]} -eq 0 ]]; then
+		if [[ -t 0 ]]; then
+			echo "Error: no files provided" >&2
+			return 1
+		fi
+		while IFS= read -r line; do
+			local path
+			path="$(mdlint.path_from_input_line "$line")" || continue
+			files+=("$path")
+		done
+	fi
+
+	for file in "${files[@]}"; do
+		if [[ ! -f "$file" ]]; then
+			echo "Skip: not a file: $file" >&2
+			continue
+		fi
+
+		local tmp
+		tmp="$(mktemp)" || return 1
+
+		awk -v demote_from_first="$demote_from_first" '
+			{
+				lines[NR]=$0
+			}
+			END {
+				n=NR
+				h1_count=0
+				for (i=1; i<=n; i++) {
+					if (lines[i] ~ /^#[[:space:]]+/ && lines[i] !~ /^##[[:space:]]+/) {
+						h1_count++
+						if (demote_from_first == "true" || h1_count > 1) {
+							lines[i] = "#" lines[i]
+						}
+						continue
+					}
+					if (i < n && lines[i+1] ~ /^[[:space:]]*=+[[:space:]]*$/) {
+						h1_count++
+						if (demote_from_first == "true" || h1_count > 1) {
+							lines[i] = "## " lines[i]
+							lines[i+1] = "__MDLINT_DELETE_LINE__"
+						}
+						continue
+					}
+				}
+
+				for (i=1; i<=n; i++) {
+					if (lines[i] == "__MDLINT_DELETE_LINE__") continue
+					print lines[i]
+				}
+			}
+		' "$file" >"$tmp"
+
+		if cmp -s "$file" "$tmp"; then
+			rm -f "$tmp"
+			echo "OK: $file"
+			continue
+		fi
+
+		mv "$tmp" "$file"
+		echo "Fixed: $file"
+	done
+}
