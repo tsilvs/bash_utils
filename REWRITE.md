@@ -1,3 +1,5 @@
+# REWRITE
+
 | Language | Community Size (M) | License        | Linux OS Features Support       | Interop with Shared Objects                            |
 |----------|--------------------|----------------|---------------------------------|--------------------------------------------------------|
 | Zig      | Small (~<0.1)      | MIT            | Good low-level Linux support    | C ABI compatible, easy shared lib interop              |
