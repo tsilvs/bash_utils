@@ -67,11 +67,10 @@ mktouch() {
 		created+=("$p")
 	done
 
-	$show_tree && {
+	if $show_tree; then
 		printf '%s\n' "${created[@]}" \
-		| tree --fromfile -F --noreport --dirsfirst
-		|| true
-	} || true
+		| tree --fromfile -F --noreport --dirsfirst || true
+	fi
 }
 
 # ---- presets (compact expansions) -------------------------------
