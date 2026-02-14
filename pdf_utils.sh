@@ -1,70 +1,147 @@
 #!/usr/bin/env bash
 
 pdf.flat.watermark() {
-	set -o errexit
-	set -o pipefail
-	set -o nounset
+	local deps=(watermark gs magick)
+	for d in "${deps[@]}"; do
+		command -v "$d" >/dev/null 2>&1 || {
+			echo "Error: dependency missing: $d" >&2
+			return 127 2>/dev/null || exit 127
+		}
+	done
 
-	local usage="Usage: ${FUNCNAME[0]} [OPTIONS] files...
-Flattens and watermarks files.
-	-w, --watermark [text]  Watermark text
-	-v, --verbose           Verbose messages
-	-h, --help              Show this help
-"
-	# -d, --dry-run    Show planned actions without changes to the system
+	local usage="$(cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] files...
+		Flattens and watermarks files.
+			-h, --help            Show this help
+			-w, --watermark TEXT  Watermark text (default: WATERMARK)
+			-v, --verbose         Verbose messages
+			-d, --dry-run         Show actions without performing them
+	EOF
+	)"
+
 	local verbose=0
 	local showhelp=0
-	# local dryrun=0
+	local dryrun=0
 	local watermark="WATERMARK"
-	local files=("")
 
 	# Parse options
-	while (( "$#" )); do
+	while (( "$#" )) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--watermark|-w) watermark="${2}"; shift 2 ;;
-			--verbose|-V) verbose=1; shift 1 ;;
-			--help|-h) showhelp=1; shift 1 ;;
-			# --dry-run|-d) dryrun=1; shift 1 ;;
+			--watermark|-w)
+				if [[ $# -lt 2 || "$2" == -* ]]; then
+					echo "Error: $1 requires an argument" >&2
+					showhelp=1
+					return 1
+				fi
+				watermark="$2"
+				shift 2
+				;;
+			--verbose|-v) verbose=1; shift ;;
+			--help|-h) showhelp=1; shift ;;
+			--dry-run|-d) dryrun=1; shift ;;
+			--) shift; break ;;
+			*) echo "Unknown option: $1" >&2; showhelp=1; return 1 ;;
 		esac
 	done
 
 	local files=("$@")
 
-	# [[ -z "$watermark" ]] && { echo "Error: watermark required"; showhelp=1; return 1; }
-	[[ -z "$files" ]] && { echo "Error: files required"; showhelp=1; return 1; }
+	[[ -z "$files" ]] && { echo "Error: files required" >&2; showhelp=1; return 1; }
 
 	(( showhelp )) && { echo -e "${usage}"; return 0; }
 
+	run_cmd() {
+		if (( dryrun )); then
+			echo "DRY-RUN: $@"
+		else
+			"$@"
+		fi
+	}
+
 	for file in "${files[@]}"; do
+		((verbose)) && echo "Processing $file"
+
+		[[ ! -f "$file" || ! -r "$file" ]] && {
+			echo "Error: cannot access $file" >&2
+			continue
+		}
+
 		dir="$(dirname "$file")"
 		base="$(basename "${file%.pdf}")"
 		output_wmk="${dir}/${base}.wmk.pdf"
 		output_flat="${dir}/${base}.wmk.flat.pdf"
 
-		watermark grid "${file}" "${watermark}" -o 0.2 -a 45 -ts 50 -tc "#AAAAAA" -s "${output_wmk}"
+		tmpdir=$(mktemp -d -p "$dir" "${base}_wmk_tmp.XXXXXX")
 
-		gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -sOutputFile="${dir}/${base}_tmp_page_%03d.png" "${output_wmk}"
+		((verbose)) && echo " -> Adding watermark..."
+		run_cmd watermark grid "${file}" "${watermark}" -o 0.2 -a 45 -ts 50 -tc "#AAAAAA" -s "${output_wmk}"
 
-		magick "${dir}/${base}_tmp_page_"*.png "${output_flat}"
-		# mkdir -p ~/Desktop/upload
-		# cp "${output_flat}" ~/Desktop/upload
+		((verbose)) && echo " -> Flattening via PNG..."
+		run_cmd gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -sOutputFile="${tmpdir}/page_%03d.png" "${output_wmk}"
 
-		rm "${output_wmk}"
-		rm "${dir}/${base}_tmp_page_"*.png
+		run_cmd magick "${tmpdir}/page_"*.png "${output_flat}"
+
+		((verbose)) && echo "Created: ${output_flat}"
+
+		run_cmd rm "${output_wmk}"
+		run_cmd rm -rf "${tmpdir}"
 	done
 }
 
-# pdf.cmp() {
-# 	local filename
-# 	gs \
-# 		-sDEVICE=pdfwrite \
-# 		-dCompatibilityLevel=1.4 \
-# 		-dPDFSETTINGS=/prepress \
-# 		-dPDFSETTINGS=/ebook \
-# 		-dNOPAUSE \
-# 		-dQUIET \
-# 		-dBATCH \
-# 		-sOutputFile=${filename}.cmp.pdf \
-# 		${filename}.pdf
-# }
+pdf.wmk() {
+	pdf.flat.watermark "$@"
+	return $?
+}
 
+pdf.compress() {
+	local deps=(gs)
+	for d in "${deps[@]}"; do
+		command -v "$d" >/dev/null 2>&1 || {
+			echo "Error: dependency missing: $d" >&2
+			return 127 2>/dev/null || exit 127
+		}
+	done
+
+	local usage="$(cat <<-EOF
+		Usage: ${FUNCNAME[0]} [OPTIONS] files...
+		Compresses PDF files using Ghostscript.
+			-h, --help     Show this help
+	EOF
+	)"
+
+	local showhelp=0
+
+	(( $# == 0 )) && { echo "Error: files required" >&2; echo -e "${usage}"; return 1; }
+
+	(( showhelp )) && { echo -e "${usage}"; return 0; }
+
+	for file in "$@"; do
+		[[ ! -f "$file" || ! -r "$file" ]] && {
+			echo "Error: cannot access $file" >&2
+			continue
+		}
+
+		dir="$(dirname "$file")"
+		base="$(basename "${file%.pdf}")"
+		output="${dir}/${base}.cmp.pdf"
+
+		gs \
+			-sDEVICE=pdfwrite \
+			-dCompatibilityLevel=1.4 \
+			-dPDFSETTINGS=/ebook \
+			-dNOPAUSE \
+			-dBATCH \
+			-q \
+			-sOutputFile="${output}" \
+			"${file}"
+
+		echo "Compressed: ${output}"
+	done
+}
+
+pdf.cmp() {
+	pdf.compress "$@"
+	return $?
+}
+
+export -f pdf.flat.watermark pdf.wmk pdf.compress pdf.cmp
