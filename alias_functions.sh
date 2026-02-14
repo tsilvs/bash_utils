@@ -30,7 +30,7 @@ sysinfo.fetch() {
 # #alias cdmyrepo="cd /mnt/data/myrepo/"
 
 ls.() {
-	ls --color --group-directories-first "$@"
+	LC_COLLATE=C ls --color=auto --group-directories-first -a -1 "$@"
 	return $?
 }
 
