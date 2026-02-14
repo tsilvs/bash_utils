@@ -1,0 +1,1553 @@
+[
+	{
+		"order": "0.0",
+		"title": "Bootloader: Grub",
+		"keywords": [
+			"Bootloader",
+			"Grub"
+		],
+		"paths": {
+			"system": [
+				"/boot/grub2/user.cfg",
+				"/etc/default/grub",
+				"/boot/grub2/grubenv"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "0.1",
+		"title": "Early Boot / initramfs",
+		"keywords": [
+			"Early Boot",
+			"initramfs",
+			"RHEL",
+			"Fedora",
+			"Debian",
+			"Ubuntu"
+		],
+		"paths": {
+			"system": [
+				"/etc/dracut.conf.d/",
+				"/etc/initramfs-tools/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "0.2",
+		"title": "Early Boot / Encryption",
+		"keywords": [
+			"Early Boot",
+			"Encryption"
+		],
+		"paths": {
+			"system": [
+				"/etc/crypttab"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "0.3",
+		"title": "Early Boot / Mount",
+		"keywords": [
+			"Early Boot",
+			"Mount"
+		],
+		"paths": {
+			"system": [
+				"/etc/fstab"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "1.0",
+		"title": "Kernel / Modules",
+		"keywords": [
+			"Kernel",
+			"Modules"
+		],
+		"paths": {
+			"system": [
+				"/etc/modprobe.d/",
+				"/etc/modules-load.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "1.1",
+		"title": "Kernel / sysctl",
+		"keywords": [
+			"Kernel",
+			"sysctl"
+		],
+		"paths": {
+			"system": [
+				"/etc/sysctl.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "1.2",
+		"title": "Kernel / Runtime",
+		"keywords": [
+			"Kernel",
+			"Runtime"
+		],
+		"paths": {
+			"system": [
+				"/etc/kernel/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "1.3",
+		"title": "Kernel / Binary Formats",
+		"keywords": [
+			"Kernel",
+			"Binary Formats"
+		],
+		"paths": {
+			"system": [
+				"/etc/binfmt.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "1.4",
+		"title": "Kernel / Modules Load",
+		"keywords": [
+			"Kernel",
+			"Modules Load"
+		],
+		"paths": {
+			"system": [
+				"/etc/depmod.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "2.0",
+		"title": "Device Management / udev",
+		"keywords": [
+			"Device Management",
+			"udev"
+		],
+		"paths": {
+			"system": [
+				"/etc/udev/rules.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "2.1",
+		"title": "Device Management / LVM",
+		"keywords": [
+			"Device Management",
+			"LVM"
+		],
+		"paths": {
+			"system": [
+				"/etc/lvm/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "2.2",
+		"title": "File Systems / ZFS",
+		"keywords": [
+			"File Systems",
+			"ZFS"
+		],
+		"paths": {
+			"system": [
+				"/etc/zfs-fuse/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "2.3",
+		"title": "File Systems / FUSE",
+		"keywords": [
+			"File Systems",
+			"FUSE"
+		],
+		"paths": {
+			"system": [
+				"/etc/fuse.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "2.4",
+		"title": "File Systems / Btrfs",
+		"keywords": [
+			"File Systems",
+			"Btrfs"
+		],
+		"paths": {
+			"system": [
+				"/etc/btrfs-assistant.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "3.0",
+		"title": "Init / SysV",
+		"keywords": [
+			"Init",
+			"SysV"
+		],
+		"paths": {
+			"system": [
+				"/etc/init.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "3.0",
+		"title": "Init / SysV compat",
+		"keywords": [
+			"Init",
+			"SysV compat"
+		],
+		"paths": {
+			"system": [
+				"/etc/rc.local"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "3.1",
+		"title": "Init / systemd",
+		"keywords": [
+			"Init",
+			"systemd"
+		],
+		"paths": {
+			"system": [
+				"/etc/systemd/system/",
+				"/usr/lib/systemd/system/"
+			],
+			"user": [
+				"~/.config/systemd/user/",
+				"~/.local/share/systemd/user/"
+			]
+		}
+	},
+	{
+		"order": "3.2",
+		"title": "Scheduled Tasks",
+		"keywords": [
+			"Scheduled Tasks"
+		],
+		"paths": {
+			"system": [
+				"/etc/cron.d/",
+				"/etc/systemd/system/timers.target.wants/"
+			],
+			"user": [
+				"~/.config/systemd/user/timers/"
+			]
+		}
+	},
+	{
+		"order": "3.3",
+		"title": "Scheduled Tasks / Cron",
+		"keywords": [
+			"Scheduled Tasks",
+			"Cron"
+		],
+		"paths": {
+			"system": [
+				"/etc/cron.d/",
+				"/etc/crontab",
+				"/etc/cron.daily/",
+				"/etc/cron.hourly/",
+				"/etc/cron.weekly/",
+				"/etc/cron.monthly/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.0",
+		"title": "Network / Core",
+		"keywords": [
+			"Network",
+			"Core"
+		],
+		"paths": {
+			"system": [
+				"/etc/NetworkManager/",
+				"/etc/netplan/",
+				"/etc/systemd/network/",
+				"/etc/hosts",
+				"/etc/hostname",
+				"/etc/resolv.conf",
+				"/etc/services",
+				"/etc/protocols",
+				"/etc/networks",
+				"/etc/ethertypes",
+				"/etc/netconfig"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.1",
+		"title": "Network / DNS",
+		"keywords": [
+			"Network",
+			"DNS"
+		],
+		"paths": {
+			"system": [
+				"/etc/dnsmasq.conf",
+				"/etc/dnsmasq.d/",
+				"/etc/unbound/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.1",
+		"title": "Network / Zeroconf",
+		"keywords": [
+			"Network",
+			"Zeroconf"
+		],
+		"paths": {
+			"system": [
+				"/etc/avahi/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.2",
+		"title": "Network / DHCP",
+		"keywords": [
+			"Network",
+			"DHCP"
+		],
+		"paths": {
+			"system": [
+				"/etc/dhcp/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.3",
+		"title": "Network / NFS",
+		"keywords": [
+			"Network",
+			"NFS"
+		],
+		"paths": {
+			"system": [
+				"/etc/nfs.conf",
+				"/etc/nfsmount.conf",
+				"/etc/exports",
+				"/etc/exports.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.4",
+		"title": "Network / iSCSI",
+		"keywords": [
+			"Network",
+			"iSCSI"
+		],
+		"paths": {
+			"system": [
+				"/etc/iscsi/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "4.5",
+		"title": "Network / VPN",
+		"keywords": [
+			"Network",
+			"VPN"
+		],
+		"paths": {
+			"system": [
+				"/etc/wireguard/",
+				"/etc/openvpn/",
+				"/etc/vpnc/",
+				"/etc/wpa_supplicant/",
+				"/etc/tor/",
+				"/etc/i2p/"
+			],
+			"user": [
+				"~/.config/wireguard/",
+				"~/.config/openvpn/"
+			]
+		}
+	},
+	{
+		"order": "5.0",
+		"title": "System Services / Logging",
+		"keywords": [
+			"System Services",
+			"Logging"
+		],
+		"paths": {
+			"system": [
+				"/etc/rsyslog.conf",
+				"/etc/rsyslog.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "5.1",
+		"title": "System Services / Time",
+		"keywords": [
+			"System Services",
+			"Time"
+		],
+		"paths": {
+			"system": [
+				"/etc/chrony.conf",
+				"/etc/systemd/timesyncd.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "5.2",
+		"title": "System Services / Locale",
+		"keywords": [
+			"System Services",
+			"Locale"
+		],
+		"paths": {
+			"system": [
+				"/etc/locale.conf",
+				"/etc/xdg/user-dirs.defaults"
+			],
+			"user": [
+				"~/.config/locale.conf",
+				"~/.config/user-dirs.dirs"
+			]
+		}
+	},
+	{
+		"order": "5.3",
+		"title": "System Services / Boot",
+		"keywords": [
+			"System Services",
+			"Boot"
+		],
+		"paths": {
+			"system": [
+				"/etc/plymouth/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "5.4",
+		"title": "System Services / Login",
+		"keywords": [
+			"System Services",
+			"Login"
+		],
+		"paths": {
+			"system": [
+				"/etc/login.defs"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "5.5",
+		"title": "System Services / Issue",
+		"keywords": [
+			"System Services",
+			"Issue"
+		],
+		"paths": {
+			"system": [
+				"/etc/issue",
+				"/etc/issue.d/",
+				"/etc/issue.net"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "5.6",
+		"title": "System Services / Mail",
+		"keywords": [
+			"System Services",
+			"Mail"
+		],
+		"paths": {
+			"system": [
+				"/etc/aliases"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "6.0",
+		"title": "Shell / Login",
+		"keywords": [
+			"Shell",
+			"Login"
+		],
+		"paths": {
+			"system": [
+				"/etc/profile",
+				"/etc/profile.d/"
+			],
+			"user": [
+				"~/.profile",
+				"~/.bash_profile"
+			]
+		}
+	},
+	{
+		"order": "6.1",
+		"title": "Shell / Interactive",
+		"keywords": [
+			"Shell",
+			"Interactive"
+		],
+		"paths": {
+			"system": [
+				"/etc/bash.bashrc",
+				"/etc/fish/config.fish",
+				"/etc/zsh/zshrc"
+			],
+			"user": [
+				"~/.bashrc",
+				"~/.config/fish/config.fish",
+				"~/.zshrc"
+			]
+		}
+	},
+	{
+		"order": "6.2",
+		"title": "Shell / Completion",
+		"keywords": [
+			"Shell",
+			"Completion"
+		],
+		"paths": {
+			"system": [
+				"/etc/bash_completion.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "6.3",
+		"title": "Shell / CSH",
+		"keywords": [
+			"Shell",
+			"CSH"
+		],
+		"paths": {
+			"system": [
+				"/etc/csh.cshrc",
+				"/etc/csh.login"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.0",
+		"title": "Security / Authentication",
+		"keywords": [
+			"Security",
+			"Authentication"
+		],
+		"paths": {
+			"system": [
+				"/etc/polkit-1/rules.d/",
+				"/etc/pam.d/",
+				"/etc/nsswitch.conf",
+				"/etc/sssd/",
+				"/etc/security/",
+				"/etc/authselect/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.1",
+		"title": "Security / Encryption",
+		"keywords": [
+			"Security",
+			"Encryption"
+		],
+		"paths": {
+			"system": [
+				"/etc/skel/.gnupg/",
+				"/etc/ssl/",
+				"/etc/gnupg/",
+				"/etc/pki/",
+				"/etc/crypto-policies/"
+			],
+			"user": [
+				"~/.gnupg/"
+			]
+		}
+	},
+	{
+		"order": "7.2",
+		"title": "Security / SSH",
+		"keywords": [
+			"Security",
+			"SSH"
+		],
+		"paths": {
+			"system": [
+				"/etc/ssh/ssh_config",
+				"/etc/ssh/"
+			],
+			"user": [
+				"~/.ssh/config"
+			]
+		}
+	},
+	{
+		"order": "7.2",
+		"title": "Security / SSH Daemon",
+		"keywords": [
+			"Security",
+			"SSH Daemon"
+		],
+		"paths": {
+			"system": [
+				"/etc/ssh/sshd_config"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.3",
+		"title": "Security / Firewall",
+		"keywords": [
+			"Security",
+			"Firewall"
+		],
+		"paths": {
+			"system": [
+				"/etc/nftables.conf",
+				"/etc/iptables/",
+				"/etc/firewalld/",
+				"/etc/nftables/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.4",
+		"title": "Security / SELinux",
+		"keywords": [
+			"Security",
+			"SELinux"
+		],
+		"paths": {
+			"system": [
+				"/etc/selinux/",
+				"/etc/sestatus.conf",
+				"/etc/setroubleshoot/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.5",
+		"title": "Security / Antivirus",
+		"keywords": [
+			"Security",
+			"Antivirus"
+		],
+		"paths": {
+			"system": [
+				"/etc/clamd.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.6",
+		"title": "Security / TPM",
+		"keywords": [
+			"Security",
+			"TPM"
+		],
+		"paths": {
+			"system": [
+				"/etc/tpm2-tss/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.7",
+		"title": "Security / Kerberos",
+		"keywords": [
+			"Security",
+			"Kerberos"
+		],
+		"paths": {
+			"system": [
+				"/etc/krb5.conf",
+				"/etc/krb5.conf.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "7.8",
+		"title": "Security / LDAP",
+		"keywords": [
+			"Security",
+			"LDAP"
+		],
+		"paths": {
+			"system": [
+				"/etc/openldap/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "8.0",
+		"title": "Display / X11",
+		"keywords": [
+			"Display",
+			"X11"
+		],
+		"paths": {
+			"system": [
+				"/etc/X11/xorg.conf.d/",
+				"/etc/X11/xorg.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "8.1",
+		"title": "Display / Wayland",
+		"keywords": [
+			"Display",
+			"Wayland"
+		],
+		"paths": {
+			"system": [
+				"/etc/sway/config",
+				"/etc/hypr/"
+			],
+			"user": [
+				"~/.config/sway/config",
+				"~/.config/hypr/"
+			]
+		}
+	},
+	{
+		"order": "8.2",
+		"title": "Display / Display Manager",
+		"keywords": [
+			"Display",
+			"Display Manager"
+		],
+		"paths": {
+			"system": [
+				"/etc/gdm/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "9.0",
+		"title": "Desktop / Audio",
+		"keywords": [
+			"Desktop",
+			"Audio"
+		],
+		"paths": {
+			"system": [
+				"/etc/asound.conf",
+				"/etc/alsa/",
+				"/etc/pipewire/",
+				"/etc/pulse/"
+			],
+			"user": [
+				"~/.asoundrc",
+				"~/.config/pipewire/",
+				"~/.config/pulse/"
+			]
+		}
+	},
+	{
+		"order": "9.1",
+		"title": "Desktop / Bluetooth",
+		"keywords": [
+			"Desktop",
+			"Bluetooth"
+		],
+		"paths": {
+			"system": [
+				"/etc/bluetooth/"
+			],
+			"user": [
+				"~/.config/bluetooth/"
+			]
+		}
+	},
+	{
+		"order": "9.2",
+		"title": "Desktop / Printing",
+		"keywords": [
+			"Desktop",
+			"Printing"
+		],
+		"paths": {
+			"system": [
+				"/etc/cups/",
+				"/etc/foomatic/",
+				"/etc/printcap",
+				"/etc/cupshelpers/"
+			],
+			"user": [
+				"~/.cups/"
+			]
+		}
+	},
+	{
+		"order": "9.3",
+		"title": "Desktop / DBus",
+		"keywords": [
+			"Desktop",
+			"DBus"
+		],
+		"paths": {
+			"system": [
+				"/etc/dbus-1/"
+			],
+			"user": [
+				"~/.config/dbus-1/"
+			]
+		}
+	},
+	{
+		"order": "9.4",
+		"title": "Desktop / Fonts",
+		"keywords": [
+			"Desktop",
+			"Fonts"
+		],
+		"paths": {
+			"system": [
+				"/etc/fonts/fonts.conf"
+			],
+			"user": [
+				"~/.config/fontconfig/fonts.conf"
+			]
+		}
+	},
+	{
+		"order": "9.5",
+		"title": "Desktop / Settings",
+		"keywords": [
+			"Desktop",
+			"Settings"
+		],
+		"paths": {
+			"system": [
+				"/etc/dconf/db/",
+				"/etc/dconf/profile/",
+				"/etc/dconf/"
+			],
+			"user": [
+				"~/.config/dconf/user"
+			]
+		}
+	},
+	{
+		"order": "9.6",
+		"title": "Desktop / GTK",
+		"keywords": [
+			"Desktop",
+			"GTK"
+		],
+		"paths": {
+			"system": [
+				"/etc/gtk-3.0/settings.ini",
+				"/etc/gtk-4.0/settings.ini"
+			],
+			"user": [
+				"~/.config/gtk-3.0/settings.ini",
+				"~/.config/gtk-4.0/settings.ini"
+			]
+		}
+	},
+	{
+		"order": "9.7",
+		"title": "Desktop / Menus",
+		"keywords": [
+			"Desktop",
+			"Menus"
+		],
+		"paths": {
+			"system": [
+				"/etc/xdg/menus/"
+			],
+			"user": [
+				"~/.config/menus/"
+			]
+		}
+	},
+	{
+		"order": "9.8",
+		"title": "Desktop / Autostart",
+		"keywords": [
+			"Desktop",
+			"Autostart"
+		],
+		"paths": {
+			"system": [
+				"/etc/xdg/autostart/"
+			],
+			"user": [
+				"~/.config/autostart/"
+			]
+		}
+	},
+	{
+		"order": "9.9",
+		"title": "Desktop / XDG System",
+		"keywords": [
+			"Desktop",
+			"XDG System"
+		],
+		"paths": {
+			"system": [
+				"/etc/xdg/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "9.10",
+		"title": "Desktop / Color Management",
+		"keywords": [
+			"Desktop",
+			"Color Management"
+		],
+		"paths": {
+			"system": [
+				"/etc/colord/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "9.11",
+		"title": "Desktop / Geolocation",
+		"keywords": [
+			"Desktop",
+			"Geolocation"
+		],
+		"paths": {
+			"system": [
+				"/etc/geoclue/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "9.12",
+		"title": "Desktop / Audio Sessions",
+		"keywords": [
+			"Desktop",
+			"Audio Sessions"
+		],
+		"paths": {
+			"system": [
+				"/etc/wireplumber/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.0",
+		"title": "Applications / Editors",
+		"keywords": [
+			"Applications",
+			"Editors"
+		],
+		"paths": {
+			"system": [
+				"/etc/nvim/sysinit.vim",
+				"/etc/vim/vimrc"
+			],
+			"user": [
+				"~/.config/nvim/init.lua",
+				"~/.vimrc"
+			]
+		}
+	},
+	{
+		"order": "10.1",
+		"title": "Applications / Version Control",
+		"keywords": [
+			"Applications",
+			"Version Control"
+		],
+		"paths": {
+			"system": [
+				"/etc/gitconfig",
+				"/etc/gitconfig"
+			],
+			"user": [
+				"~/.config/git/config",
+				"~/.gitconfig"
+			]
+		}
+	},
+	{
+		"order": "10.2",
+		"title": "Applications / Terminal",
+		"keywords": [
+			"Applications",
+			"Terminal"
+		],
+		"paths": {
+			"system": [
+				"/etc/tmux.conf",
+				"/etc/tmux.conf"
+			],
+			"user": [
+				"~/.config/tmux/tmux.conf",
+				"~/.tmux.conf"
+			]
+		}
+	},
+	{
+		"order": "10.3",
+		"title": "Applications / Launchers",
+		"keywords": [
+			"Applications",
+			"Launchers"
+		],
+		"paths": {
+			"system": [
+				"/etc/xdg/rofi/"
+			],
+			"user": [
+				"~/.config/rofi/config.rasi"
+			]
+		}
+	},
+	{
+		"order": "10.4",
+		"title": "Applications / Virtualization",
+		"keywords": [
+			"Applications",
+			"Virtualization"
+		],
+		"paths": {
+			"system": [
+				"/etc/libvirt/",
+				"/etc/qemu/",
+				"/etc/qemu-ga/",
+				"/etc/vmware-tools/"
+			],
+			"user": [
+				"~/.config/libvirt/"
+			]
+		}
+	},
+	{
+		"order": "10.5",
+		"title": "Applications / Browsers",
+		"keywords": [
+			"Applications",
+			"Browsers"
+		],
+		"paths": {
+			"system": [
+				"/etc/chromium/"
+			],
+			"user": [
+				"~/.config/chromium/"
+			]
+		}
+	},
+	{
+		"order": "10.6",
+		"title": "Applications / AI",
+		"keywords": [
+			"Applications",
+			"AI"
+		],
+		"paths": {
+			"system": [
+				"/etc/ollama/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.7",
+		"title": "Applications / Containers",
+		"keywords": [
+			"Applications",
+			"Containers"
+		],
+		"paths": {
+			"system": [
+				"/etc/containerd/",
+				"/etc/containers/",
+				"/etc/cni/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.8",
+		"title": "Applications / Web Server",
+		"keywords": [
+			"Applications",
+			"Web Server"
+		],
+		"paths": {
+			"system": [
+				"/etc/httpd/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.9",
+		"title": "Applications / File Sharing",
+		"keywords": [
+			"Applications",
+			"File Sharing"
+		],
+		"paths": {
+			"system": [
+				"/etc/samba/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.10",
+		"title": "Applications / Storage",
+		"keywords": [
+			"Applications",
+			"Storage"
+		],
+		"paths": {
+			"system": [
+				"/etc/ceph/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.11",
+		"title": "Applications / Scanners",
+		"keywords": [
+			"Applications",
+			"Scanners"
+		],
+		"paths": {
+			"system": [
+				"/etc/sane.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "10.12",
+		"title": "Applications / Cockpit",
+		"keywords": [
+			"Applications",
+			"Cockpit"
+		],
+		"paths": {
+			"system": [
+				"/etc/cockpit/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.0",
+		"title": "Package Management / APT",
+		"keywords": [
+			"Package Management",
+			"APT",
+			"Debian",
+			"Ubuntu"
+		],
+		"paths": {
+			"system": [
+				"/etc/apt/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.0",
+		"title": "Package Management / YUM",
+		"keywords": [
+			"Package Management",
+			"YUM",
+			"RHEL",
+			"CentOS"
+		],
+		"paths": {
+			"system": [
+				"/etc/yum.conf",
+				"/etc/yum.repos.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.0",
+		"title": "Package Management / DNF",
+		"keywords": [
+			"Package Management",
+			"DNF",
+			"Fedora"
+		],
+		"paths": {
+			"system": [
+				"/etc/dnf/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.1",
+		"title": "Package Management / Pacman",
+		"keywords": [
+			"Package Management",
+			"Pacman",
+			"Arch"
+		],
+		"paths": {
+			"system": [
+				"/etc/pacman.conf",
+				"/etc/pacman.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.2",
+		"title": "Package Management / Portage",
+		"keywords": [
+			"Package Management",
+			"Portage",
+			"Gentoo"
+		],
+		"paths": {
+			"system": [
+				"/etc/portage/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "11.3",
+		"title": "Package Management / Nix",
+		"keywords": [
+			"Package Management",
+			"Nix"
+		],
+		"paths": {
+			"system": [
+				"/etc/nix/nix.conf"
+			],
+			"user": [
+				"~/.config/nix/nix.conf"
+			]
+		}
+	},
+	{
+		"order": "11.4",
+		"title": "Package Management / Flatpak",
+		"keywords": [
+			"Package Management",
+			"Flatpak"
+		],
+		"paths": {
+			"system": [
+				"/etc/flatpak/remotes.d/"
+			],
+			"user": [
+				"~/.local/share/flatpak/"
+			]
+		}
+	},
+	{
+		"order": "11.5",
+		"title": "Package Management / AUR",
+		"keywords": [
+			"Package Management",
+			"AUR"
+		],
+		"paths": {
+			"system": [],
+			"user": [
+				"~/.config/yay/config.json"
+			]
+		}
+	},
+	{
+		"order": "12.0",
+		"title": "System Administration",
+		"keywords": [
+			"System Administration"
+		],
+		"paths": {
+			"system": [
+				"/etc/sudoers",
+				"/etc/sudoers.d/",
+				"/etc/sudo.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.1",
+		"title": "System Administration",
+		"keywords": [
+			"System Administration"
+		],
+		"paths": {
+			"system": [
+				"/etc/logrotate.conf",
+				"/etc/logrotate.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.2",
+		"title": "System Administration",
+		"keywords": [
+			"System Administration"
+		],
+		"paths": {
+			"system": [
+				"/etc/audit/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.3",
+		"title": "System Administration",
+		"keywords": [
+			"System Administration"
+		],
+		"paths": {
+			"system": [
+				"/etc/environment",
+				"/etc/passwd",
+				"/etc/shadow",
+				"/etc/group",
+				"/etc/gshadow"
+			],
+			"user": [
+				"~/.pam_environment"
+			]
+		}
+	},
+	{
+		"order": "12.4",
+		"title": "System Administration / Sysconfig",
+		"keywords": [
+			"System Administration",
+			"Sysconfig",
+			"RHEL",
+			"Fedora"
+		],
+		"paths": {
+			"system": [
+				"/etc/sysconfig/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.5",
+		"title": "System Administration / Default",
+		"keywords": [
+			"System Administration",
+			"Default",
+			"Debian",
+			"Ubuntu"
+		],
+		"paths": {
+			"system": [
+				"/etc/default/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.6",
+		"title": "System Administration / Init",
+		"keywords": [
+			"System Administration",
+			"Init"
+		],
+		"paths": {
+			"system": [
+				"/etc/inittab"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.7",
+		"title": "System Administration / Libraries",
+		"keywords": [
+			"System Administration",
+			"Libraries"
+		],
+		"paths": {
+			"system": [
+				"/etc/ld.so.conf.d/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.8",
+		"title": "System Administration / Man Pages",
+		"keywords": [
+			"System Administration",
+			"Man Pages"
+		],
+		"paths": {
+			"system": [
+				"/etc/man_db.conf"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.9",
+		"title": "System Administration / MIME",
+		"keywords": [
+			"System Administration",
+			"MIME"
+		],
+		"paths": {
+			"system": [
+				"/etc/mime.types"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.10",
+		"title": "System Administration / Snapshots",
+		"keywords": [
+			"System Administration",
+			"Snapshots"
+		],
+		"paths": {
+			"system": [
+				"/etc/snapper/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.11",
+		"title": "System Administration / Power",
+		"keywords": [
+			"System Administration",
+			"Power"
+		],
+		"paths": {
+			"system": [
+				"/etc/UPower/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.12",
+		"title": "System Administration / Tuning",
+		"keywords": [
+			"System Administration",
+			"Tuning"
+		],
+		"paths": {
+			"system": [
+				"/etc/tuned/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.13",
+		"title": "System Administration / Package / Debian, Ubuntu",
+		"keywords": [
+			"System Administration",
+			"Package",
+			"Debian",
+			"Ubuntu"
+		],
+		"paths": {
+			"system": [
+				"/etc/dpkg/"
+			],
+			"user": []
+		}
+	},
+	{
+		"order": "12.14",
+		"title": "System Administration / Package / RHEL, Fedora",
+		"keywords": [
+			"System Administration",
+			"Package",
+			"RHEL",
+			"Fedora"
+		],
+		"paths": {
+			"system": [
+				"/etc/rpm/"
+			],
+			"user": []
+		}
+	}
+]

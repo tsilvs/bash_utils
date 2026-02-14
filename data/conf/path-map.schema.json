@@ -1,0 +1,50 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"order": {
+				"type": "string",
+				"pattern": "^\\d+\\.\\d+$",
+				"description": "Hierarchical order like '0.0'"
+			},
+			"title": {
+				"type": "string",
+				"description": "Descriptive title of the config group"
+			},
+			"keywords": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Keywords extracted from title for search/filtering"
+			},
+			"paths": {
+				"type": "object",
+				"properties": {
+					"system": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "TBD???"
+						},
+						"description": "System-wide config paths"
+					},
+					"user": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "TBD???"
+						},
+						"description": "User home config paths (relative to ~)"
+					}
+				},
+				"required": ["system", "user"],
+				"additionalProperties": false
+			}
+		},
+		"required": ["order", "title", "keywords", "paths"],
+		"additionalProperties": false
+	}
+}
