@@ -17,7 +17,7 @@ adb.app.ls() {
 				cat <<-EOF
 				Usage: ${FUNCNAME[0]} <device_id> [options]
 				Options:
-				  -u|--user <id>  User ID (default: 0)
+					-u|--user <id>  User ID (default: 0)
 				EOF
 				return 0
 				;;
@@ -41,11 +41,11 @@ adb.apps.diff() {
 				cat <<-EOF
 				Usage: ${FUNCNAME[0]} <device_id> [options]
 				Options:
-				  -u1 <id>      First user ID (default: 0)
-				  -u2 <id>      Second user ID (default: 10)
-				  -m|--matching Only show matching packages
-				  -a|--added    Only show packages added in u2
-				  -r|--removed  Only show packages removed from u2
+					-u1 <id>      First user ID (default: 0)
+					-u2 <id>      Second user ID (default: 10)
+					-m|--matching Only show matching packages
+					-a|--added    Only show packages added in u2
+					-r|--removed  Only show packages removed from u2
 				EOF
 				return 0
 				;;
@@ -84,8 +84,8 @@ adb.app.install() {
 				cat <<-EOF
 				Usage: ${FUNCNAME[0]} <device_id> [options] <package...>
 				Options:
-				  -u|--user <id>  User ID (repeatable)
-				  -a|--all-users  Install for all users
+					-u|--user <id>  User ID (repeatable)
+					-a|--all-users  Install for all users
 				EOF
 				return 0
 				;;
@@ -119,8 +119,8 @@ adb.app.uninstall() {
 				cat <<-EOF
 				Usage: ${FUNCNAME[0]} <device_id> [options] <package...>
 				Options:
-				  -u|--user <id>  User ID (repeatable)
-				  -a|--all-users  Uninstall for all users
+					-u|--user <id>  User ID (repeatable)
+					-a|--all-users  Uninstall for all users
 				EOF
 				return 0
 				;;
