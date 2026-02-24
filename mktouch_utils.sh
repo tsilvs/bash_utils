@@ -91,8 +91,7 @@ mktouch() {
 	local paths=() created=()
 	local show_tree=false dry_run=false list_presets=false debug=false
 	local prefix=""
-	local use_preset=""
-	local preset_mode=false
+	local use_presets=()
 	
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
@@ -124,26 +123,21 @@ mktouch() {
 			-n|--dry-run) dry_run=true; show_tree=true; shift ;;
 			-d|--debug) debug=true; shift ;;
 			-p|--preset)
-				preset_mode=true
 				shift; [[ $# -eq 0 ]] && { echo "Error: --preset needs arg" >&2; return 1; }
-				use_preset="$1"; shift ;;
+				use_presets+=("$1"); shift ;;
 			-l|--list-presets) list_presets=true; shift ;;
 			--) shift; break ;;
 			-*) echo "Error: unknown option $1" >&2; return 1 ;;
-			*) 
-				# Check if it's a preset name (only if not in explicit path mode)
-				if [[ "$preset_mode" == false ]]; then
-					local preset_paths
-					preset_paths=$(mktouch.preset.get "$1" 2>/dev/null)
-					if [[ -n "$preset_paths" ]]; then
-						# It's a preset - expand it
-						read -ra expanded <<< "$preset_paths"
-						paths+=("${expanded[@]}")
-					else
-						# It's a regular path
-						paths+=("$1")
-					fi
+			*)
+				# Check if it's a preset name
+				local preset_paths
+				preset_paths=$(mktouch.preset.get "$1" 2>/dev/null)
+				if [[ -n "$preset_paths" ]]; then
+					# It's a preset - expand it
+					read -ra expanded <<< "$preset_paths"
+					paths+=("${expanded[@]}")
 				else
+					# It's a regular path
 					paths+=("$1")
 				fi
 				shift ;;
@@ -161,7 +155,7 @@ mktouch() {
 		done
 		echo "Debug: paths=${paths[*]}"
 		echo "Debug: prefix=${prefix}"
-		echo "Debug: use_preset=${use_preset}"
+		echo "Debug: use_presets=${use_presets[*]}"
 	fi
 
 	# Handle --list-presets
@@ -170,17 +164,17 @@ mktouch() {
 		return $?
 	fi
 	
-	# Handle explicit --preset
-	if [[ -n "$use_preset" ]]; then
+	# Handle explicit --preset(s)
+	for preset_name in "${use_presets[@]}"; do
 		local preset_paths
-		preset_paths=$(mktouch.preset.get "$use_preset" 2>/dev/null)
+		preset_paths=$(mktouch.preset.get "$preset_name" 2>/dev/null)
 		if [[ -z "$preset_paths" ]]; then
-			echo "Error: preset not found: $use_preset" >&2
+			echo "Error: preset not found: $preset_name" >&2
 			return 1
 		fi
 		read -ra expanded <<< "$preset_paths"
 		paths+=("${expanded[@]}")
-	fi
+	done
 	
 	# Add remaining args
 	paths+=("$@")
