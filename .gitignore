@@ -1,5 +1,6 @@
 _test.sh
 _test.*
+.test
 .hid
 .ignore
 .bak
