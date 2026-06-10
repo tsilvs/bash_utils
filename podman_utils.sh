@@ -9,11 +9,13 @@ Commit container to an image.
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
-	local uname="$(id --user --name)"
+	local uname
+	uname="$(id --user --name)"
 	local suffix="${uname}"
 	local image_name=${2:-"img_${container_name}_${suffix}"}
 	#local image_id_file_path="$(pwd)/${image_name}.iidfile"
-	local image_id=$(podman commit \
+	local image_id
+	image_id=$(podman commit \
 		--quiet \
 		--pause=true \
 		--author "${uname}" \
@@ -25,6 +27,7 @@ Commit container to an image.
 	echo -e "${image_name}\t${image_id}"
 }
 
+# shellcheck disable=SC2120
 podman.root.dir() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -36,6 +39,7 @@ Show container location for current context.
 	podman info | yq '.store.graphRoot'
 }
 
+# shellcheck disable=SC2120
 podman.conts.manif.path() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -44,9 +48,11 @@ Show containers manifest path for current context.
 	--help	Show help"
 		return 0
 	}
+	# shellcheck disable=SC2119
 	echo "$(podman.root.dir)/overlay-containers/containers.json"
 }
 
+# shellcheck disable=SC2120
 podman.conts.manif() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -55,7 +61,8 @@ Show containers manifest for current context.
 	--help	Show help"
 		return 0
 	}
-	echo "$(jq --raw-input 'fromjson' "$(podman.conts.manif.path)")"
+	# shellcheck disable=SC2119
+	jq --raw-input 'fromjson' "$(podman.conts.manif.path)"
 }
 
 podman.cont.manif() {
@@ -67,6 +74,7 @@ Show container manifest for current context.
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
+	# shellcheck disable=SC2119
 	podman.conts.manif | jq --arg name "${container_name}" '.[] | select(.names[0] == $name)'
 }
 
@@ -120,6 +128,7 @@ Show container location for current context.
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
+	# shellcheck disable=SC2119
 	echo "$(podman.root.dir)/overlay-containers/$(podman.cont.id "${container_name}")"
 }
 
@@ -133,6 +142,7 @@ podman.imgs.pullAll() {
 	return $?
 }
 
+# shellcheck disable=SC2120
 podman.imgs.manif.path() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -141,9 +151,11 @@ Show images manifest path for current context.
 	--help	Show help"
 		return 0
 	}
+	# shellcheck disable=SC2119
 	echo "$(podman.root.dir)/overlay-images/images.json"
 }
 
+# shellcheck disable=SC2120
 podman.imgs.manif() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -152,7 +164,8 @@ Show images manifest for current context.
 	--help	Show help"
 		return 0
 	}
-	echo "$(jq --raw-input 'fromjson' "$(podman.imgs.manif.path)")"
+	# shellcheck disable=SC2119
+	jq --raw-input 'fromjson' "$(podman.imgs.manif.path)"
 }
 
 podman.img.manif() {
@@ -167,6 +180,7 @@ Options:
 		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
+	# shellcheck disable=SC2119
 	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
 }
 
@@ -194,6 +208,7 @@ Show image location for current context.
 		return 0
 	}
 	local image_name="${1:?"Image Name is required"}"
+	# shellcheck disable=SC2119
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
 }
 
@@ -270,6 +285,7 @@ Options:
 	podman save "${img_name}" | podman load
 }
 
+# shellcheck disable=SC2120
 podman.conf.path() {
 	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
@@ -278,8 +294,10 @@ Show config location for current context.
 	--help	Show help"
 		return 0
 	}
-	local podman_yaml="$(podman info)"
-	local podman_path_config="$(dirname "$(echo "${podman_yaml}" | yq '.store.configFile')")"
+	local podman_yaml
+	podman_yaml="$(podman info)"
+	local podman_path_config
+	podman_path_config="$(dirname "$(echo "${podman_yaml}" | yq '.store.configFile')")"
 	echo "${podman_path_config}"
 }
 
