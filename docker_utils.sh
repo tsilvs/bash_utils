@@ -13,7 +13,10 @@ docker.root.dir() {
 }
 
 docker.img.env() {
-	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
+	(($# > 1)) && {
+		echo -e "Command accepts 1 argument"
+		return 0
+	}
 	local image_name="${1:?"Image name required"}"
 	sudo docker image inspect --format json "${image_name}" | jq --raw-output '.[].Config.Env[]'
 }
@@ -28,7 +31,6 @@ docker.img.env() {
 # echo "Image ID: $image_id"
 # echo "Image metadata: /var/lib/docker/image/overlay2/imagedb/content/$image_id"
 
-
 # docker.img.exportAll() {
 # 	:
 # 	# docker images --format docker-daemon:{{.Repository}}:{{.Tag}}
@@ -38,3 +40,7 @@ docker.img.env() {
 # docker container list --format '{{.Names}}' | xargs -n 1 docker container remove
 # docker image list --format '{{.Repository}}:{{.Tag}}' | xargs -n 1 docker image rm --force
 
+# TODO:
+#
+# + Port `podman_utils`
+# + Add `docker.cont.vol` with filters by id, name & other params
