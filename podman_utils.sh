@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 podman.commit() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} CONTAINER_NAME [IMAGE_NAME]
+			"Usage: ${FUNCNAME[0]} CONTAINER_NAME [IMAGE_NAME]
 Commit container to an image.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
 	local uname="$(id --user --name)"
@@ -26,45 +26,45 @@ Commit container to an image.
 }
 
 podman.root.dir() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show container location for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	podman info | yq '.store.graphRoot'
 }
 
 podman.conts.manif.path() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show containers manifest path for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	echo "$(podman.root.dir)/overlay-containers/containers.json"
 }
 
 podman.conts.manif() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show containers manifest for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	echo "$(jq --raw-input 'fromjson' "$(podman.conts.manif.path)")"
 }
 
 podman.cont.manif() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
 Show container manifest for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
 	podman.conts.manif | jq --arg name "${container_name}" '.[] | select(.names[0] == $name)'
@@ -84,37 +84,40 @@ podman.cont.cmd() {
 }
 
 podman.cont.env() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Show container internal environment for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
-	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
+	(($# > 1)) && {
+		echo -e "Command accepts 1 argument"
+		return 0
+	}
 	local img_name="${1:?"Image Name is required"}"
 	podman.cont.conf "${img_name}" | jq --raw-output '.Config.Env[]'
 }
 
 podman.cont.id() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
 Show container ID for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
 	podman.cont.manif "${container_name}" | jq --raw-output '.id'
 }
 
 podman.cont.dir() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
 Show container location for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
 	echo "$(podman.root.dir)/overlay-containers/$(podman.cont.id "${container_name}")"
@@ -131,64 +134,64 @@ podman.imgs.pullAll() {
 }
 
 podman.imgs.manif.path() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show images manifest path for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	echo "$(podman.root.dir)/overlay-images/images.json"
 }
 
 podman.imgs.manif() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show images manifest for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	echo "$(jq --raw-input 'fromjson' "$(podman.imgs.manif.path)")"
 }
 
 podman.img.manif() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Show image manifest for current context.
 Params:
 	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
 Options:
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
 	podman.imgs.manif | jq --arg name "${img_name}" '.[] | select(.names[0] == $name)'
 }
 
 podman.img.id() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Show image ID for current context.
 Params:
 	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
 Options:
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
 	podman.img.manif "${img_name}" | jq --raw-output '.id'
 }
 
 podman.img.dir() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Show image location for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local image_name="${1:?"Image Name is required"}"
 	echo "$(podman.root.dir)/overlay-images/$(podman.img.id "${image_name}")"
@@ -237,40 +240,43 @@ podman.img.entry() {
 }
 
 podman.img.env() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Show image internal environment for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
-	(($# > 1)) && { echo -e "Command accepts 1 argument"; return 0; }
+	(($# > 1)) && {
+		echo -e "Command accepts 1 argument"
+		return 0
+	}
 	local img_name="${1:?"Image Name is required"}"
 	podman.img.conf "${img_name}" | jq --raw-output '.Config.Env[]'
 }
 
 podman.img.mv.root() {
-	[[ ( (( $# == 0 )) ) || ( " $* " =~ ' --help ' ) ]] && {
+	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]} IMG_NAME
+			"Usage: ${FUNCNAME[0]} IMG_NAME
 Move image to root.
 Params:
 	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
 Options:
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
 	podman save "${img_name}" | podman load
 }
 
 podman.conf.path() {
-	[[ ( " $* " =~ ' --help ' ) ]] && {
+	[[ (" $* " =~ ' --help ') ]] && {
 		echo -e \
-"Usage: ${FUNCNAME[0]}
+			"Usage: ${FUNCNAME[0]}
 Show config location for current context.
-	--help	Show help";
-		return 0;
+	--help	Show help"
+		return 0
 	}
 	local podman_yaml="$(podman info)"
 	local podman_path_config="$(dirname "$(echo "${podman_yaml}" | yq '.store.configFile')")"
@@ -328,3 +334,6 @@ export -f podman.conf.path
 # export -f podman.conf.merge
 # export -f podman.img.importAll
 
+# TODO:
+#
+# + Add `podman.cont.vol` with filters by id, name & other params
