@@ -5,3 +5,4 @@ _test.*
 .ignore
 .bak
 .build
+_tmp
