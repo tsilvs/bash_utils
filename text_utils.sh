@@ -20,6 +20,7 @@ txt.wmk.rm() {
 	for d in "${deps[@]}"; do
 		command -v "$d" >/dev/null 2>&1 || {
 			echo "Error: dependency missing: $d" >&2
+			# shellcheck disable=SC2317  # reachable when script is executed (not sourced)
 			return 127 2>/dev/null || exit 127
 		}
 	done
@@ -138,10 +139,10 @@ _txt.wmk.rm_complete() {
 	local all_opts=("${_TXT_WMK_RM_OPTS_SHORT[@]}" "${_TXT_WMK_RM_OPTS_LONG[@]}")
 	case "$cur" in
 	-*)
-		COMPREPLY=($(compgen -W "${all_opts[*]}" -- "$cur"))
+		mapfile -t COMPREPLY < <(compgen -W "${all_opts[*]}" -- "$cur")
 		;;
 	*)
-		COMPREPLY=($(compgen -f -- "$cur"))
+		mapfile -t COMPREPLY < <(compgen -f -- "$cur")
 		;;
 	esac
 }
