@@ -75,8 +75,12 @@ _elf_strings_one() {
 		rm -f "$tmp"
 		return 1
 	}
-	((show_name)) && echo "=== $section ==="
-	strings -n "$min_len" "$tmp"
+	if ((show_name)); then
+		echo "section $section"
+		strings -n "$min_len" "$tmp" | sed 's/^/    /'
+	else
+		strings -n "$min_len" "$tmp"
+	fi
 	rm -f "$tmp"
 }
 
@@ -136,6 +140,11 @@ elf.strings() {
 
 	: "${elf:?Usage: ${FUNCNAME[0]} [OPTIONS] ELF}"
 
+	# --show-section-name without explicit --section implies --all-sections
+	((show_name)) && [[ -z "$section" ]] && all_sections=1
+
+	((show_name)) && echo "=== $elf ==="
+
 	if ((all_sections)); then
 		while IFS= read -r sec; do
 			_elf_strings_one "$elf" "$sec" "$min_len" "$show_name"
@@ -147,7 +156,6 @@ elf.strings() {
 		fi
 		_elf_strings_one "$elf" "$section" "$min_len" "$show_name"
 	else
-		((show_name)) && echo "=== $elf ==="
 		strings -n "$min_len" "$elf"
 	fi
 }
