@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 podman.commit() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} CONTAINER_NAME [IMAGE_NAME]
-Commit container to an image.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} CONTAINER_NAME [IMAGE_NAME]
+			Commit container to an image.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
@@ -29,11 +41,19 @@ Commit container to an image.
 
 # shellcheck disable=SC2120
 podman.root.dir() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show container location for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show container location for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	podman info | yq '.store.graphRoot'
@@ -41,11 +61,19 @@ Show container location for current context.
 
 # shellcheck disable=SC2120
 podman.conts.manif.path() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show containers manifest path for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show containers manifest path for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	# shellcheck disable=SC2119
@@ -54,11 +82,19 @@ Show containers manifest path for current context.
 
 # shellcheck disable=SC2120
 podman.conts.manif() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show containers manifest for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show containers manifest for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	# shellcheck disable=SC2119
@@ -66,11 +102,19 @@ Show containers manifest for current context.
 }
 
 podman.cont.manif() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
-Show container manifest for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			Show container manifest for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
@@ -92,11 +136,19 @@ podman.cont.cmd() {
 }
 
 podman.cont.env() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Show container internal environment for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Show container internal environment for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	(($# > 1)) && {
@@ -108,11 +160,19 @@ Show container internal environment for current context.
 }
 
 podman.cont.id() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
-Show container ID for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			Show container ID for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
@@ -120,11 +180,19 @@ Show container ID for current context.
 }
 
 podman.cont.dir() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} CONTAINER_NAME
-Show container location for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} CONTAINER_NAME
+			Show container location for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local container_name="${1:?"Container Name is required"}"
@@ -144,11 +212,19 @@ podman.imgs.pullAll() {
 
 # shellcheck disable=SC2120
 podman.imgs.manif.path() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show images manifest path for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show images manifest path for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	# shellcheck disable=SC2119
@@ -157,11 +233,19 @@ Show images manifest path for current context.
 
 # shellcheck disable=SC2120
 podman.imgs.manif() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show images manifest for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show images manifest for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	# shellcheck disable=SC2119
@@ -169,14 +253,22 @@ Show images manifest for current context.
 }
 
 podman.img.manif() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Show image manifest for current context.
-Params:
-	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
-Options:
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Show image manifest for current context.
+			Params:
+			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			Options:
+			--help	Show help
+		EOF
 		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
@@ -185,14 +277,22 @@ Options:
 }
 
 podman.img.id() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Show image ID for current context.
-Params:
-	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
-Options:
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Show image ID for current context.
+			Params:
+			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			Options:
+			--help	Show help
+		EOF
 		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
@@ -200,11 +300,19 @@ Options:
 }
 
 podman.img.dir() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Show image location for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Show image location for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local image_name="${1:?"Image Name is required"}"
@@ -255,11 +363,19 @@ podman.img.entry() {
 }
 
 podman.img.env() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Show image internal environment for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Show image internal environment for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	(($# > 1)) && {
@@ -271,14 +387,22 @@ Show image internal environment for current context.
 }
 
 podman.img.mv.root() {
-	[[ ((($# == 0))) || (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]} IMG_NAME
-Move image to root.
-Params:
-	IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
-Options:
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} IMG_NAME
+			Move image to root.
+			Params:
+			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			Options:
+			--help	Show help
+		EOF
 		return 0
 	}
 	local img_name="${1:?"Image Name is required"}"
@@ -287,11 +411,19 @@ Options:
 
 # shellcheck disable=SC2120
 podman.conf.path() {
-	[[ (" $* " =~ ' --help ') ]] && {
-		echo -e \
-			"Usage: ${FUNCNAME[0]}
-Show config location for current context.
-	--help	Show help"
+	local showhelp=0
+	while (( $# )) && [[ "$1" == -* ]]; do
+		case "$1" in
+			--help|-h) showhelp=1; shift ;;
+			*) echo "Unknown option: $1" >&2; return 1 ;;
+		esac
+	done
+	(( showhelp )) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]}
+			Show config location for current context.
+			--help	Show help
+		EOF
 		return 0
 	}
 	local podman_yaml
@@ -355,3 +487,28 @@ export -f podman.conf.path
 # TODO:
 #
 # + Add `podman.cont.vol` with filters by id, name & other params
+register_simple_completion "podman.commit"
+register_simple_completion "podman.root.dir"
+register_simple_completion "podman.conts.manif.path"
+register_simple_completion "podman.conts.manif"
+register_simple_completion "podman.cont.manif"
+register_simple_completion "podman.cont.conf"
+register_simple_completion "podman.cont.cmd"
+register_simple_completion "podman.cont.env"
+register_simple_completion "podman.cont.id"
+register_simple_completion "podman.cont.dir"
+register_simple_completion "podman.imgs.ls"
+register_simple_completion "podman.imgs.pullAll"
+register_simple_completion "podman.imgs.manif.path"
+register_simple_completion "podman.imgs.manif"
+register_simple_completion "podman.img.manif"
+register_simple_completion "podman.img.id"
+register_simple_completion "podman.img.dir"
+register_simple_completion "podman.img.conf"
+register_simple_completion "podman.img.digest"
+register_simple_completion "podman.img.sha"
+register_simple_completion "podman.img.cmd"
+register_simple_completion "podman.img.entry"
+register_simple_completion "podman.img.env"
+register_simple_completion "podman.img.mv.root"
+register_simple_completion "podman.conf.path"

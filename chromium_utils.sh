@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 chromium.search.keywords() {
 	local func_name="${FUNCNAME[0]}"
 
@@ -27,17 +31,35 @@ Example:
 	$func_name --csv --columns url Default
 "
 
-	local opt_csv=0
-	[[ " $* " =~ ' --csv ' ]] && { shift 1; opt_csv=1; }
-	local opt_columns=""
-	[[ " $* " =~ ' --columns ' ]] && { shift 1; opt_columns=${1}; shift 1; }
+	local showhelp=0 opt_csv=0 opt_columns="" profile_input=""
+	while (($#)); do
+		case "$1" in
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		--csv)
+			opt_csv=1
+			shift
+			;;
+		--columns)
+			opt_columns="$2"
+			shift 2
+			;;
+		*)
+			profile_input="$1"
+			shift
+			;;
+		esac
+	done
+	((showhelp)) && {
+		echo -e "${usage}"
+		return 0
+	}
+	profile_input="${profile_input:-"${profile_dir_default}"}"
 	local columns="${opt_columns:-"${columns_default}"}"
-	local profile_input="${1:-"${profile_dir_default}"}"
 
 	local sql_keywords_select="SELECT ${columns} FROM keywords;"
-
-	# [[ $# -eq 0 || $1 == "-h" || $1 == "--help" ]]
-	[[ " $* " =~ ' -h ' || " $* " =~ ' --help ' ]] && { echo -e "${usage}"; return 0; }
 
 	local profile_path=""
 
@@ -54,7 +76,10 @@ Example:
 		return 1
 	fi
 
-	(( !!opt_csv )) && { sqlite3 -csv "${db_path}" "${sql_keywords_select}"; return $?; }
+	((!!opt_csv)) && {
+		sqlite3 -csv "${db_path}" "${sql_keywords_select}"
+		return $?
+	}
 
 	sqlite3 -header -column "${db_path}" "${sql_keywords_select}"
 }
@@ -115,57 +140,63 @@ chromium.search.engines() {
 chromium.ext.ls() {
 	local profile="Default"
 	local file=""
-	
+
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-			-h|--help)
-				cat <<- EOF
+		-h | --help)
+			cat <<-EOF
 				Usage: ${FUNCNAME[0]} [OPTIONS] [PROFILE]
 				List enabled Chromium extensions
-				
+
 				Options:
 				  -b, --browser BROWSER   Browser prefix (default: chromium)
 				  -p, --profile PROFILE   Profile name (default: Default)
 				  -f, --file FILE         Direct path to Preferences file
 				  -h, --help              Show help
-				
+
 				Examples:
 				  ${FUNCNAME[0]}
 				  ${FUNCNAME[0]} 'Profile 1'
 				  ${FUNCNAME[0]} -p 'Profile 1'
 				  ${FUNCNAME[0]} -f ~/custom/Preferences
-				EOF
-				return 0
-				;;
-			-p|--profile)
-				profile="$2"
-				shift 2
-				;;
-			-b|--browser)
-				browser="$2"
-				shift 2
-				;;
-			-f|--file)
-				file="$2"
-				shift 2
-				;;
-			*)
-				profile="$1"
-				shift
-				;;
+			EOF
+			return 0
+			;;
+		-p | --profile)
+			profile="$2"
+			shift 2
+			;;
+		-b | --browser)
+			browser="$2"
+			shift 2
+			;;
+		-f | --file)
+			file="$2"
+			shift 2
+			;;
+		*)
+			profile="$1"
+			shift
+			;;
 		esac
 	done
-	
+
 	local prefs_file="${file:-$HOME/.config/${browser:-chromium}/$profile/Preferences}"
-	
-	[[ ! -f "$prefs_file" ]] && { echo "Error: File not found: $prefs_file" >&2; return 1; }
-	
+
+	[[ ! -f "$prefs_file" ]] && {
+		echo "Error: File not found: $prefs_file" >&2
+		return 1
+	}
+
 	jq -r '.extensions.settings | to_entries[] | select((.value.disable_reasons // []) | length == 0) | "\(.value.manifest.name)|\(.key)"' \
 		"$prefs_file"
 }
 
-
-
 #chromium.ext.merge() {}
 
 #chromium.ext.conf.merge() {}
+
+export -f chromium.search.keywords chromium.search.engines chromium.ext.ls
+register_simple_completion "chromium.search.keywords" "--csv" "--columns"
+register_simple_completion "chromium.search.engines"
+register_simple_completion "chromium.ext.ls" "-p" "--profile" "-b" "--browser" "-f" "--file"

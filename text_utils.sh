@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 # source "$(dirname "${BASH_SOURCE[0]}")/lib/fn.sh"
 
 # txt.wmk.rm option definitions (parallel arrays — reused in usage + completion)
@@ -79,13 +83,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() {
-		if ((dryrun)); then
-			echo "DRY-RUN: $*"
-		else
-			"$@"
-		fi
-	}
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && {
 		echo -e "${usage}"

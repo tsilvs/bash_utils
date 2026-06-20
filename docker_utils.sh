@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 #docker.images.ls() {
 #	docker images --format "docker-daemon:{{.Repository}}:{{.Tag}}"
 #}
@@ -44,3 +48,5 @@ docker.img.env() {
 #
 # + Port `podman_utils`
 # + Add `docker.cont.vol` with filters by id, name & other params
+
+export -f docker.images.ls docker.root.dir docker.img.env docker.img.exportAll docker.user.group.add

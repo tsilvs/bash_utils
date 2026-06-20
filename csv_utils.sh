@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 #!/bin/bash
 
 csv.merge() {
@@ -230,3 +234,5 @@ except Exception as e:
 
 # csv.row.template --input merged.sep.csv --template 'name="{{.Custom 1}}.{{.Custom 2}}.{{.Custom 3}}.{{.Custom 4}}"\nenabled="yes"\ntype="17"\naction="Move to folder"\nactionValue="imap://username%40domain@imap.domain/Msg/{{.Custom 1}}/{{.Custom 2}}/{{.Custom 3}}/{{.Custom 4}}"\ncondition="AND (from,contains,{{.Primary Email}})"'
 
+register_simple_completion "csv.merge"
+register_simple_completion "csv.col.split"

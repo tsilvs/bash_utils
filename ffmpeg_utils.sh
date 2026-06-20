@@ -72,13 +72,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() {
-		((dryrun)) && {
-			echo "DRY-RUN: $*"
-			return
-		}
-		"$@"
-	}
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && {
 		printf '%s\n' "$usage"
@@ -223,13 +217,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() {
-		((dryrun)) && {
-			echo "DRY-RUN: $*"
-			return
-		}
-		"$@"
-	}
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && {
 		printf '%s\n' "$usage"
@@ -362,13 +350,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() {
-		((dryrun)) && {
-			echo "DRY-RUN: $*"
-			return
-		}
-		"$@"
-	}
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && {
 		printf '%s\n' "$usage"
@@ -492,13 +474,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() {
-		((dryrun)) && {
-			echo "DRY-RUN: $*"
-			return
-		}
-		"$@"
-	}
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && {
 		printf '%s\n' "$usage"
@@ -1115,7 +1091,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() { ((dryrun)) && { echo "DRY-RUN: $*"; return; }; "$@"; }
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && { printf '%s\n' "$usage"; return 0; }
 	[[ -z "$output" ]] && { echo "Error: -o/--output required" >&2; return 1; }
@@ -1290,7 +1266,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() { ((dryrun)) && { echo "DRY-RUN: $*"; return; }; "$@"; }
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && { printf '%s\n' "$usage"; return 0; }
 	[[ -z "$output" ]] && { echo "Error: -o/--output required" >&2; return 1; }
@@ -1581,7 +1557,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() { ((dryrun)) && { echo "DRY-RUN: $*"; return; }; "$@"; }
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && { printf '%s\n' "$usage"; return 0; }
 	[[ -z "$output" ]] && { echo "Error: -o/--output required" >&2; return 1; }
@@ -1718,7 +1694,7 @@ Examples:
 		esac
 	done
 
-	run_cmd() { ((dryrun)) && { echo "DRY-RUN: $*"; return; }; "$@"; }
+	eval "$(dry_run_wrapper)"
 
 	((showhelp)) && { printf '%s\n' "$usage"; return 0; }
 	[[ $# -eq 0 ]] && { echo "Error: no input file" >&2; return 1; }

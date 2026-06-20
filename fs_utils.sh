@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-lsblk.uuid() {
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
+fs.lsblk.uuid() {
 	# set -o errexit
 	# set -o pipefail
 	# set -o nounset
@@ -10,17 +14,16 @@ lsblk.uuid() {
 	# exit 0
 }
 
-dir.monitor() {
+fs.dir.monitor() {
 	MONITOR_DIR="$1"
 	if [[ -z "$MONITOR_DIR" ]]; then
-		echo "Usage: $0 /path/to/directory"
-		exit 1
+		echo "Usage: ${FUNCNAME[0]} /path/to/directory"
+		return 1
 	fi
 
 	echo "Monitoring new file creation in $MONITOR_DIR"
 
-	inotifywait -m -e create --format '%w%f' "$MONITOR_DIR" | while read NEWFILE
-	do
+	inotifywait -m -e create --format '%w%f' "$MONITOR_DIR" | while read NEWFILE; do
 		# Find processes that have the new file open
 		PIDS=$(lsof "$NEWFILE" 2>/dev/null | awk 'NR>1 {print $2}' | sort -u)
 		if [[ -z "$PIDS" ]]; then
@@ -34,11 +37,11 @@ dir.monitor() {
 	done
 }
 
-file.monitor() {
+fs.file.monitor() {
 	FILE_TO_MONITOR="$1"
 	if [[ -z "$FILE_TO_MONITOR" ]]; then
-		echo "Usage: $0 /path/to/file"
-		exit 1
+		echo "Usage: ${FUNCNAME[0]} /path/to/file"
+		return 1
 	fi
 
 	# Start monitoring file creation using auditctl (needs root)
@@ -55,3 +58,5 @@ file.monitor() {
 		fi
 	done
 }
+
+export -f fs.lsblk.uuid fs.dir.monitor fs.file.monitor

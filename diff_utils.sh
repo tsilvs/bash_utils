@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
+
 diff.right() {
 	local deps=(diff)
 	local file_left="" file_right=""
@@ -58,3 +62,4 @@ diff.right() {
 }
 
 export -f diff.right
+register_simple_completion "diff.right"

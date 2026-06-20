@@ -1,42 +1,105 @@
 #!/usr/bin/env bash
 
-# SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/cli.sh"
 
-source "$(dirname "${BASH_SOURCE[0]}")/lib/bashlib.sh"
-
-rot() { rpm-ostree "$@"; return $?; }
-rot.install() { rot install --idempotent --apply-live --assumeyes "$@"; return $?; }
-rot.i() { rot.install "$@"; return $?; }
-rot.uninstall() { rot uninstall --idempotent --assumeyes "$@"; return $?; }
-rot.u() { rot.uninstall "$@"; return $?; }
-rot.search() { rot search "$@" | sort -u | perl -ne 'print if /^[^=]/'; return $?; }
-rot.s() { rot.search "$@"; return $?; }
+rot() {
+	rpm-ostree "$@"
+	return $?
+}
+rot.install() {
+	rot install --idempotent --apply-live --assumeyes "$@"
+	return $?
+}
+rot.i() {
+	rot.install "$@"
+	return $?
+}
+rot.uninstall() {
+	rot uninstall --idempotent --assumeyes "$@"
+	return $?
+}
+rot.u() {
+	rot.uninstall "$@"
+	return $?
+}
+rot.search() {
+	rot search "$@" | sort -u | perl -ne 'print if /^[^=]/'
+	return $?
+}
+rot.s() {
+	rot.search "$@"
+	return $?
+}
 
 rot.booted() {
-	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [properties]
-Get information about the currently booted deployment.
-	--index	print deployment index
-"
+	local showhelp=0 show_index=0 props=()
+	while (($#)); do
+		case "$1" in
+		--help | -h)
+			showhelp=1
+			;;
+		--index)
+			show_index=1
+			;;
+		--)
+			shift
+			break
+			;;
+		-*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
+		*)
+			props+=("$1")
+			;;
+		esac
+		shift
+	done
+	((showhelp)) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} [OPTIONS] [properties...]
+			Get information about the currently booted deployment.
+			  --index  print deployment index
+			  --help   Show this help
+		EOF
 		return 0
 	}
-	local json_data=$(rpm-ostree status --json) || { echo "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	local deployments=$(echo "$json_data" | jq '.deployments')
-	[[ " $* " =~ ' --index ' ]] && {
-		local booted_index=$(echo "$deployments" | jq 'to_entries[] | select(.value.booted) | .key') || { echo "Error: Failed to get booted index" >&2; return 1; }
-		shift 1
+	local json_data
+	json_data=$(rpm-ostree status --json) || {
+		echo "Error: Failed to get rpm-ostree status" >&2
+		return 1
+	}
+	local deployments
+	deployments=$(echo "$json_data" | jq '.deployments')
+	if ((show_index)); then
+		local booted_index
+		booted_index=$(echo "$deployments" | jq 'to_entries[] | select(.value.booted) | .key') || {
+			echo "Error: Failed to get booted index" >&2
+			return 1
+		}
 		echo "$booted_index"
 		return 0
+	fi
+	local booted_deployment
+	booted_deployment=$(echo "$deployments" | jq '.[] | select(.booted)') || {
+		echo "Error: Failed to get booted deployment data" >&2
+		return 1
 	}
-	local booted_deployment=$(echo "$deployments" | jq '.[] | select(.booted)') || { echo "Error: Failed to get booted deployment data" >&2; return 1; }
-	local props=($@)
-	[[ ${#props[@]} -eq 0 ]] && { echo "$booted_deployment"; return 0; }
+	[[ ${#props[@]} -eq 0 ]] && {
+		echo "$booted_deployment"
+		return 0
+	}
 	for prop in "${props[@]}"; do
 		echo -e "$prop:\t$(echo "$booted_deployment" | jq --raw-output ".${prop}")"
 	done
 }
 
-rot.booted.version() { rot.booted "$@" | jq -r '.version'; return $?; }
+rot.booted.version() {
+	rot.booted "$@" | jq -r '.version'
+	return $?
+}
 
 # rot.booted.dir() {
 # 	local depl_booted_serial="$(rpm-ostree status --json | jq --raw-output '.deployments[] | select(.booted) | .serial')"
@@ -46,18 +109,38 @@ rot.booted.version() { rot.booted "$@" | jq -r '.version'; return $?; }
 # }
 
 rot.repos.list() {
-	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
-List repos in a deployment (default index: 0).
-	--help	Show this help
-"
+	local showhelp=0
+	while (($#)) && [[ "$1" == -* ]]; do
+		case "$1" in
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*) break ;;
+		esac
+	done
+	((showhelp)) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
+			List repos in a deployment (default index: 0).
+			  --help  Show this help
+		EOF
 		return 0
 	}
-	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
+	local json_data=$(rpm-ostree status --json) || {
+		echo -e "Error: Failed to get rpm-ostree status" >&2
+		return 1
+	}
 	local depl="${1:-$(rot.booted --index)}"
-	[[ ! "${depl}" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
+	[[ ! "${depl}" =~ ^[0-9]+$ ]] && {
+		echo -e "Error: Deployment index must be a number" >&2
+		return 1
+	}
 	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
-	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2; return 1; }
+	[[ "${depl}" -ge "${deployment_count}" ]] && {
+		echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2
+		return 1
+	}
 	local json_data_depl=$(echo "$json_data" | jq --argjson idx "${depl}" '.deployments[$idx]')
 	local repos=$(echo "${json_data_depl}" | jq --raw-output '.["layered-commit-meta"].["rpmostree.rpmmd-repos"][].["id"]' | sort -u)
 	echo "${repos}"
@@ -68,42 +151,104 @@ List repos in a deployment (default index: 0).
 #}
 
 rot.pl() {
-	[[ " $* " =~ ' --help ' ]] && {
-		echo -e "Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
-List packages from a specific deployment in rpm-ostree (default: index 0).
-	--lskeys	List top level keys
-	--lsdeps	List deployment indexes
-	--lsdepsver	List deployment indexes with versions
-	--ulo	User layered only
-	--all	All packages
-	--help	Show this help
-"
-#	--blo	Base layer only
+	local showhelp=0 show_lskeys=0 show_lsdeps=0 show_lsdepsver=0 opt_ulo=0 opt_all=0 depl=""
+	while (($#)); do
+		case "$1" in
+		--help | -h)
+			showhelp=1
+			;;
+		--lskeys)
+			show_lskeys=1
+			;;
+		--lsdeps)
+			show_lsdeps=1
+			;;
+		--lsdepsver)
+			show_lsdepsver=1
+			;;
+		--ulo)
+			opt_ulo=1
+			;;
+		--all)
+			opt_all=1
+			;;
+		--)
+			shift
+			break
+			;;
+		-*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
+		*)
+			[[ -z "$depl" ]] && depl="$1" || {
+				echo "Error: unexpected argument: $1" >&2
+				return 1
+			}
+			;;
+		esac
+		shift
+	done
+	((showhelp)) && {
+		cat <<-EOF
+			Usage: ${FUNCNAME[0]} [OPTIONS] [DEPLOYMENT_INDEX]
+			List packages from a specific deployment in rpm-ostree (default: index 0).
+			  --lskeys      List top level keys
+			  --lsdeps      List deployment indexes
+			  --lsdepsver   List deployment indexes with versions
+			  --ulo         User layered only
+			  --all         All packages
+			  --help        Show this help
+		EOF
 		return 0
 	}
-	local json_data=$(rpm-ostree status --json) || { echo -e "Error: Failed to get rpm-ostree status" >&2; return 1; }
-	[[ " $* " =~ ' --lskeys ' ]] && { shift 1; echo "${json_data}" | jq --raw-output 'keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdeps ' ]] && { shift 1; echo "${json_data}" | jq --raw-output '.deployments | keys[]'; return 0; }
-	[[ " $* " =~ ' --lsdepsver ' ]] && { shift 1; echo "${json_data}" | jq --raw-output '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'; return 0; }
-	local opt_ulo=0
-	local opt_all=0
-	[[ " $* " =~ ' --ulo ' ]] && { shift 1; opt_ulo=1; }
-	[[ " $* " =~ ' --all ' ]] && { shift 1; opt_all=1; }
-	#(($# > 0)) && shift $(( $# - 1 ))
-	local depl="${1:-$(rot.booted --index)}"
-	[[ ! "${depl}" =~ ^[0-9]+$ ]] && { echo -e "Error: Deployment index must be a number" >&2; return 1; }
-	local deployment_count=$(echo "$json_data" | jq '.deployments | length')
-	[[ "${depl}" -ge "${deployment_count}" ]] && { echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2; return 1; }
-	local json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
+	local json_data
+	json_data=$(rpm-ostree status --json) || {
+		echo -e "Error: Failed to get rpm-ostree status" >&2
+		return 1
+	}
+	((show_lskeys)) && {
+		echo "${json_data}" | jq --raw-output 'keys[]'
+		return 0
+	}
+	((show_lsdeps)) && {
+		echo "${json_data}" | jq --raw-output '.deployments | keys[]'
+		return 0
+	}
+	((show_lsdepsver)) && {
+		echo "${json_data}" | jq --raw-output '.deployments | to_entries[] | "\(.key)\t\(.value.version)"'
+		return 0
+	}
+	depl="${depl:-$(rot.booted --index)}"
+	[[ ! "${depl}" =~ ^[0-9]+$ ]] && {
+		echo -e "Error: Deployment index must be a number" >&2
+		return 1
+	}
+	local deployment_count
+	deployment_count=$(echo "$json_data" | jq '.deployments | length')
+	[[ "${depl}" -ge "${deployment_count}" ]] && {
+		echo -e "Error: Deployment index ${depl} out of range (total: ${deployment_count})" >&2
+		return 1
+	}
+	local json_data_depl
+	json_data_depl=$(echo "$json_data" | jq --raw-output --argjson idx "${depl}" '.deployments[$idx]')
 	local pkg_full_list=""
-	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.packages[]?');
-	(( !opt_ulo || opt_all )) && { pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]'); }
+	pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.packages[]?')
+	((!opt_ulo || opt_all)) && { pkg_full_list+=$(echo "$json_data_depl" | jq --raw-output '.["base-commit-meta"].["ostree.container.image-config"] | fromjson | .config.Labels.["dev.hhd.rechunk.info"] | fromjson | .packages | keys[]'); }
 	echo "${pkg_full_list}" | sort -u
 }
 
 rot.pl.diff() {
-	local depl_old="${1:-1}"; [[ ! "${depl_old}" =~ ^[0-9]+$ ]] && { echo -e "Old Deployment index must be a number (got ${depl_old})"; return 1; }
-	local depl_new="${2:-$(rot.booted --index)}"; [[ ! "${depl_new}" =~ ^[0-9]+$ ]] && { echo -e "New Deployment index must be a number (got ${depl_new})"; return 1; }
+	local depl_old="${1:-1}"
+	[[ ! "${depl_old}" =~ ^[0-9]+$ ]] && {
+		echo -e "Old Deployment index must be a number (got ${depl_old})"
+		return 1
+	}
+	local depl_new="${2:-$(rot.booted --index)}"
+	[[ ! "${depl_new}" =~ ^[0-9]+$ ]] && {
+		echo -e "New Deployment index must be a number (got ${depl_new})"
+		return 1
+	}
 	diff -u <(rot.pl "${depl_old}") <(rot.pl "${depl_new}") | perl -ne 'print if /^[+-]/'
 }
 
@@ -245,3 +390,17 @@ export -f rot.repos.list
 # export -f rot.s.inst
 # export -f rot.s.ninst
 # export -f rot.swap.rm.by.uuid
+register_simple_completion "rot"
+register_simple_completion "rot.install"
+register_simple_completion "rot.i"
+register_simple_completion "rot.uninstall"
+register_simple_completion "rot.u"
+register_simple_completion "rot.search"
+register_simple_completion "rot.s"
+register_simple_completion "rot.booted" "--index"
+register_simple_completion "rot.booted.version"
+register_simple_completion "rot.repos.list"
+register_simple_completion "rot.pl" "--lskeys" "--lsdeps" "--lsdepsver" "--ulo" "--all"
+register_simple_completion "rot.pl.diff"
+register_simple_completion "rot.pl.diff.add"
+register_simple_completion "rot.pl.diff.rem"
