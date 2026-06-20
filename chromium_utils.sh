@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 
+# === Chromium Profile Management — Feature Backlog ===
+# See BRD: docs/feat/chromium/0.req/BRD.md
+#
+# Phase 1 (Foundation):    profile.ls, profile.info, profile.create, safety guards
+# Phase 2 (Read/Query):    port.keywords, port.bookmarks
+# Phase 3 (Write/Mutate):  profile.clone, profile.rm
+# Phase 4 (Remaining):     port.extensions, port.history, port.cookies, port.prefs
+# Phase 5 (Bulk + X-br):   port (dispatcher), backup/restore, cross-browser mapping
+#
+# Profile is directory: $CHROME_CONFIG/<Name>/
+# Key sections: Preferences (JSON), Bookmarks (JSON), Web Data (SQLite),
+#   History (SQLite), Cookies (SQLite), Login Data (SQLite),
+#   Extensions/ (dirs), Sessions/ (binary), Local State (JSON, profile-level)
+
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
