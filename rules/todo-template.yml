@@ -1,0 +1,183 @@
+# ast-grep rules: enforce TODO.md template structure.
+#
+# Expected shape:
+#   # TODO
+#   ## Tasks
+#   ### <Task name>
+#   #### Context      → + bullet lines
+#   #### Definition   → + [ ] checkbox items
+#   #### Acceptance / DoD → + [ ] checkbox items
+
+# ---------------------------------------------------------------------------
+# 1. Stray content directly under # TODO (outside any ## section)
+# ---------------------------------------------------------------------------
+id: todo-stray-content
+language: markdown
+message: "TODO.md: free content under '# TODO' outside a '## Tasks' section"
+severity: warning
+files:
+  - "**/TODO.md"
+rule:
+  kind: paragraph
+  inside:
+    kind: section
+    has:
+      kind: atx_heading
+      has:
+        kind: atx_h1_marker
+  not:
+    inside:
+      kind: section
+      has:
+        kind: atx_heading
+        has:
+          kind: atx_h2_marker
+
+---
+# ---------------------------------------------------------------------------
+# 2. h2 section whose heading is not "Tasks"
+# ---------------------------------------------------------------------------
+id: todo-h2-not-tasks
+language: markdown
+message: "TODO.md: unexpected '## <heading>' — only '## Tasks' allowed under '# TODO'"
+severity: warning
+files:
+  - "**/TODO.md"
+rule:
+  kind: atx_heading
+  has:
+    kind: atx_h2_marker
+  not:
+    has:
+      regex: "^Tasks$"
+
+---
+# ---------------------------------------------------------------------------
+# 3. ### task section missing #### Context subsection
+# ---------------------------------------------------------------------------
+id: todo-task-missing-context
+language: markdown
+message: "TODO.md: task section '### ...' missing required '#### Context' subsection"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  kind: section
+  has:
+    kind: atx_heading
+    has:
+      kind: atx_h3_marker
+  not:
+    has:
+      kind: section
+      has:
+        kind: atx_heading
+        has:
+          regex: "^Context$"
+
+---
+# ---------------------------------------------------------------------------
+# 4. ### task section missing #### Definition subsection
+# ---------------------------------------------------------------------------
+id: todo-task-missing-definition
+language: markdown
+message: "TODO.md: task section '### ...' missing required '#### Definition' subsection"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  kind: section
+  has:
+    kind: atx_heading
+    has:
+      kind: atx_h3_marker
+  not:
+    has:
+      kind: section
+      has:
+        kind: atx_heading
+        has:
+          regex: "^Definition$"
+
+---
+# ---------------------------------------------------------------------------
+# 5. ### task section missing #### Acceptance / DoD subsection
+# ---------------------------------------------------------------------------
+id: todo-task-missing-dod
+language: markdown
+message: "TODO.md: task section '### ...' missing required '#### Acceptance / DoD' subsection"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  kind: section
+  has:
+    kind: atx_heading
+    has:
+      kind: atx_h3_marker
+  not:
+    has:
+      kind: section
+      has:
+        kind: atx_heading
+        has:
+          regex: "^Acceptance / DoD$"
+
+---
+# ---------------------------------------------------------------------------
+# 6. #### Context contains bare paragraph instead of bullet lines
+# ---------------------------------------------------------------------------
+id: todo-context-not-bullet
+language: markdown
+message: "TODO.md: '#### Context' content must be bullet lines (+ item), not bare paragraphs"
+severity: warning
+files:
+  - "**/TODO.md"
+rule:
+  kind: paragraph
+  inside:
+    kind: section
+    has:
+      kind: atx_heading
+      has:
+        regex: "^Context$"
+
+---
+# ---------------------------------------------------------------------------
+# 7. #### Definition list items missing checkbox marker ([ ])
+# ---------------------------------------------------------------------------
+id: todo-definition-no-checkbox
+language: markdown
+message: "TODO.md: '#### Definition' items must be task checkboxes '+ [ ] ...'"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  kind: list
+  inside:
+    kind: section
+    has:
+      kind: atx_heading
+      has:
+        regex: "^Definition$"
+  regex: "^\\+ [^\\[]"
+
+---
+# ---------------------------------------------------------------------------
+# 8. #### Acceptance / DoD list items missing checkbox marker ([ ])
+# ---------------------------------------------------------------------------
+id: todo-dod-no-checkbox
+language: markdown
+message: "TODO.md: '#### Acceptance / DoD' items must be task checkboxes '+ [ ] ...'"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  kind: list
+  inside:
+    kind: section
+    has:
+      kind: atx_heading
+      has:
+        regex: "^Acceptance / DoD$"
+  regex: "^\\+ [^\\[]"

@@ -1,0 +1,43 @@
+id: todo-context-not-bullet
+snapshots:
+  ? |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    bare paragraph text
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+  : labels:
+    - source: |
+        bare paragraph text
+      style: primary
+      start: 45
+      end: 65
+    - source: Context
+      style: secondary
+      start: 36
+      end: 43
+    - source: |
+        #### Context
+      style: secondary
+      start: 31
+      end: 44
+    - source: |+
+        #### Context
+
+        bare paragraph text
+
+      style: secondary
+      start: 31
+      end: 66

@@ -1,0 +1,306 @@
+id: todo-stray-content
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + Some context
+
+    #### Definition
+
+    + [ ] Do something
+
+    #### Acceptance / DoD
+
+    + [ ] It works
+invalid:
+  - |
+    # TODO
+
+    Stray paragraph before Tasks section.
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + Some context
+
+    #### Definition
+
+    + [ ] Do something
+
+    #### Acceptance / DoD
+
+    + [ ] It works
+
+---
+id: todo-h2-not-tasks
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Notes
+
+    some content
+
+---
+id: todo-task-missing-context
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+
+---
+id: todo-task-missing-definition
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Acceptance / DoD
+
+    + [ ] done
+
+---
+id: todo-task-missing-dod
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+---
+id: todo-context-not-bullet
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note line
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    bare paragraph text
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+
+---
+id: todo-definition-no-checkbox
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step one
+    + [ ] step two
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + plain step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+
+---
+id: todo-dod-no-checkbox
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] requirement one
+    + [ ] requirement two
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + plain requirement

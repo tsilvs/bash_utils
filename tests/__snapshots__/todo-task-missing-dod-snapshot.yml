@@ -1,0 +1,39 @@
+id: todo-task-missing-dod
+snapshots:
+  ? |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+  : labels:
+    - source: |
+        ### My Task
+
+        #### Context
+
+        + note
+
+        #### Definition
+
+        + [ ] step
+      style: primary
+      start: 18
+      end: 81
+    - source: '###'
+      style: secondary
+      start: 18
+      end: 21
+    - source: |
+        ### My Task
+      style: secondary
+      start: 18
+      end: 30

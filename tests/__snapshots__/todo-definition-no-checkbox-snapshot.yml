@@ -1,0 +1,44 @@
+id: todo-definition-no-checkbox
+snapshots:
+  ? |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + plain step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+  : labels:
+    - source: |+
+        + plain step
+
+      style: primary
+      start: 70
+      end: 84
+    - source: Definition
+      style: secondary
+      start: 58
+      end: 68
+    - source: |
+        #### Definition
+      style: secondary
+      start: 53
+      end: 69
+    - source: |+
+        #### Definition
+
+        + plain step
+
+      style: secondary
+      start: 53
+      end: 84

@@ -1,0 +1,42 @@
+id: todo-dod-no-checkbox
+snapshots:
+  ? |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + plain requirement
+  : labels:
+    - source: |
+        + plain requirement
+      style: primary
+      start: 105
+      end: 125
+    - source: Acceptance / DoD
+      style: secondary
+      start: 87
+      end: 103
+    - source: |
+        #### Acceptance / DoD
+      style: secondary
+      start: 82
+      end: 104
+    - source: |
+        #### Acceptance / DoD
+
+        + plain requirement
+      style: secondary
+      start: 82
+      end: 125

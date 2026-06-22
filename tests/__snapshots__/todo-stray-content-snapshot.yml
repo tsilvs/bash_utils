@@ -1,0 +1,60 @@
+id: todo-stray-content
+snapshots:
+  ? |
+    # TODO
+
+    Stray paragraph before Tasks section.
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + Some context
+
+    #### Definition
+
+    + [ ] Do something
+
+    #### Acceptance / DoD
+
+    + [ ] It works
+  : labels:
+    - source: |
+        Stray paragraph before Tasks section.
+      style: primary
+      start: 8
+      end: 46
+    - source: '#'
+      style: secondary
+      start: 0
+      end: 1
+    - source: |
+        # TODO
+      style: secondary
+      start: 0
+      end: 7
+    - source: |
+        # TODO
+
+        Stray paragraph before Tasks section.
+
+        ## Tasks
+
+        ### My Task
+
+        #### Context
+
+        + Some context
+
+        #### Definition
+
+        + [ ] Do something
+
+        #### Acceptance / DoD
+
+        + [ ] It works
+      style: secondary
+      start: 0
+      end: 175

@@ -1,0 +1,18 @@
+id: todo-h2-not-tasks
+snapshots:
+  ? |
+    # TODO
+
+    ## Notes
+
+    some content
+  : labels:
+    - source: |
+        ## Notes
+      style: primary
+      start: 8
+      end: 17
+    - source: '##'
+      style: secondary
+      start: 8
+      end: 10
