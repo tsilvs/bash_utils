@@ -25,6 +25,16 @@ tree.yaml() {
 	return $?
 }
 
+# tree.meta() {
+# 	# TODO: Read per-directory $dir/.meta annotations, print inline with tree output.
+# 	# $dir/.meta format (tab-separated):
+# 	# .	This dir's description
+# 	# subdir	subdir description
+# 	# file		file description
+# 	tree. "$@"
+# 	return $?
+# }
+#
 # tree.sim() {
 # 	local opts # all proper `tree` options
 # 	# TODO: Process options
@@ -33,4 +43,3 @@ tree.yaml() {
 # 	tree $opts --fromfile <(printf "%s\n" "${pathexpan}")
 # 	return $?
 # }
-
