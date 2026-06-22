@@ -4,19 +4,54 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
 
-# `_IV` variable suffix stands for `input validation`
+# ── git.dir.check option metadata ─────────────────────────────────────────────
+_GIT_DIR_CHECK_OPTS_SHORT=(-h -n)
+_GIT_DIR_CHECK_OPTS_LONG=(--help --dry-run)
+_GIT_DIR_CHECK_OPTS_ARG=("" "")
+_GIT_DIR_CHECK_OPTS_DESC=("Display this help message" "Show command without executing")
+
+# ── git.url.to_dir option metadata ────────────────────────────────────────────
+_GIT_URL_TO_DIR_OPTS_SHORT=(-h)
+_GIT_URL_TO_DIR_OPTS_LONG=(--help)
+_GIT_URL_TO_DIR_OPTS_ARG=("")
+_GIT_URL_TO_DIR_OPTS_DESC=("Display this help message")
+
+# ── git.clone.to_dir option metadata ──────────────────────────────────────────
+_GIT_CLONE_TO_DIR_OPTS_SHORT=(-h -n -d)
+_GIT_CLONE_TO_DIR_OPTS_LONG=(--help --dry-run --dir)
+_GIT_CLONE_TO_DIR_OPTS_ARG=("" "" "DIR")
+_GIT_CLONE_TO_DIR_OPTS_DESC=("Display this help message" "Show commands without executing" "Target directory path")
+
+# ── git.clone.list option metadata ────────────────────────────────────────────
+_GIT_CLONE_LIST_OPTS_SHORT=(-h -n -r)
+_GIT_CLONE_LIST_OPTS_LONG=(--help --dry-run --root)
+_GIT_CLONE_LIST_OPTS_ARG=("" "" "DIR")
+_GIT_CLONE_LIST_OPTS_DESC=("Display this help message" "Show commands without executing" "Repository root directory")
+
+# ── git.remote.set_url option metadata ────────────────────────────────────────
+_GIT_REMOTE_SET_URL_OPTS_SHORT=(-h -n -r -u -p -s)
+_GIT_REMOTE_SET_URL_OPTS_LONG=(--help --dry-run --remote --user --project --host-suffix)
+_GIT_REMOTE_SET_URL_OPTS_ARG=("" "" "NAME" "USER" "REPO" "SUF")
+_GIT_REMOTE_SET_URL_OPTS_DESC=(
+	"Display this help message"
+	"Show command without executing"
+	"Remote name (default: origin)"
+	"User/org name (default: parent dir name)"
+	"Repository name (default: current dir name)"
+	"SSH host suffix (default: gh)"
+)
 
 git.dir.check() {
-	local repo_path="" show_help=false dry_run=false
+	local repo_path="" show_help=0 dryrun=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
-			show_help=true
+			show_help=1
 			shift
 			;;
 		-n | --dry-run)
-			dry_run=true
+			dryrun=1
 			shift
 			;;
 		-*)
@@ -30,38 +65,34 @@ git.dir.check() {
 		esac
 	done
 
-	${show_help} && {
-		cat <<-EOF
-			Usage: ${FUNCNAME[0]} [OPTIONS] REPO_PATH
-			Checks if directory is git repo.
-
-			Options:
-			  -h, --help       Display this help message
-			  -n, --dry-run    Show command without executing
-		EOF
+	eval "$(build_usage "GIT_DIR_CHECK" "${FUNCNAME[0]}" "REPO_PATH" "Checks if directory is git repo.")"
+	((show_help)) && {
+		printf '%s\n' "$usage"
 		return 0
 	}
+
+	dep_check git || return
 
 	[[ -z "${repo_path}" ]] && {
 		echo "Repo path required" >&2
 		return 1
 	}
 
-	local run="git -C '${repo_path}' rev-parse >/dev/null 2>&1"
-	${dry_run} && {
-		echo "${run}"
-		return 0
-	}
-	eval "${run}"
+	eval "$(dry_run_wrapper)"
+	if ((dryrun)); then
+		run_cmd git -C "${repo_path}" rev-parse
+	else
+		git -C "${repo_path}" rev-parse >/dev/null 2>&1
+	fi
 }
 
 git.url.to_dir() {
-	local remote_address="" show_help=false
+	local remote_address="" show_help=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
-			show_help=true
+			show_help=1
 			shift
 			;;
 		-*)
@@ -75,38 +106,37 @@ git.url.to_dir() {
 		esac
 	done
 
-	${show_help} && {
-		cat <<-EOF
-			Usage: ${FUNCNAME[0]} [OPTIONS] REMOTE_URL
-			Extracts directory name from git remote url.
-
-			Options:
-			  -h, --help    Display this help message
-		EOF
+	eval "$(build_usage "GIT_URL_TO_DIR" "${FUNCNAME[0]}" "REMOTE_URL" "Extracts directory name from git remote url.")"
+	((show_help)) && {
+		printf '%s\n' "$usage"
 		return 0
 	}
+
+	dep_check sed || return
 
 	[[ -z "${remote_address}" ]] && {
 		echo "Remote address required" >&2
 		return 1
 	}
 
-	local author_name="$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
-	local project_name="$(basename "${remote_address}" .git)"
+	local author_name
+	author_name="$(echo "${remote_address}" | sed -E 's/.*[:/]([^/]+)\/.*/\1/')"
+	local project_name
+	project_name="$(basename "${remote_address}" .git)"
 	echo "${author_name}/${project_name}"
 }
 
 git.clone.to_dir() {
-	local remote_address="" target_dir="" show_help=false dry_run=false
+	local remote_address="" target_dir="" show_help=0 dryrun=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
-			show_help=true
+			show_help=1
 			shift
 			;;
 		-n | --dry-run)
-			dry_run=true
+			dryrun=1
 			shift
 			;;
 		-d | --dir)
@@ -133,18 +163,13 @@ git.clone.to_dir() {
 		esac
 	done
 
-	${show_help} && {
-		cat <<-EOF
-			Usage: ${FUNCNAME[0]} [OPTIONS] REMOTE_URL [TARGET_DIR]
-			Clones remote repo to local dir.
-
-			Options:
-			  -h, --help         Display this help message
-			  -n, --dry-run      Show commands without executing
-			  -d, --dir DIR      Target directory path
-		EOF
+	eval "$(build_usage "GIT_CLONE_TO_DIR" "${FUNCNAME[0]}" "REMOTE_URL [TARGET_DIR]" "Clones remote repo to local dir.")"
+	((show_help)) && {
+		printf '%s\n' "$usage"
 		return 0
 	}
+
+	dep_check git || return
 
 	[[ -z "${remote_address}" ]] && {
 		echo "Remote address required" >&2
@@ -152,28 +177,25 @@ git.clone.to_dir() {
 	}
 	[[ -z "${target_dir}" ]] && target_dir="$(git.url.to_dir "${remote_address}")"
 
-	local repo_root="$(pwd)"
+	local repo_root
+	repo_root="$(pwd)"
 	target_dir="$(realpath -m "${target_dir}")"
 
-	local run="mkdir -p '${target_dir}' && git -C '${repo_root}' clone '${remote_address}' '${target_dir}'"
-	${dry_run} && {
-		echo "${run}"
-		return 0
-	}
-	eval "${run}"
+	eval "$(dry_run_wrapper)"
+	run_cmd mkdir -p "${target_dir}" && run_cmd git -C "${repo_root}" clone "${remote_address}" "${target_dir}"
 }
 
 git.clone.list() {
-	local list_file="" repo_root="" show_help=false dry_run=false
+	local list_file="" repo_root="" show_help=0 dryrun=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
-			show_help=true
+			show_help=1
 			shift
 			;;
 		-n | --dry-run)
-			dry_run=true
+			dryrun=1
 			shift
 			;;
 		-r | --root)
@@ -200,18 +222,13 @@ git.clone.list() {
 		esac
 	done
 
-	${show_help} && {
-		cat <<-EOF
-			Usage: ${FUNCNAME[0]} [OPTIONS] LIST_FILE [REPO_ROOT]
-			Clones list of remote repos to local dir.
-
-			Options:
-			  -h, --help         Display this help message
-			  -n, --dry-run      Show commands without executing
-			  -r, --root DIR     Repository root directory
-		EOF
+	eval "$(build_usage "GIT_CLONE_LIST" "${FUNCNAME[0]}" "LIST_FILE [REPO_ROOT]" "Clones list of remote repos to local dir.")"
+	((show_help)) && {
+		printf '%s\n' "$usage"
 		return 0
 	}
+
+	dep_check git || return
 
 	[[ -z "${list_file}" ]] && {
 		echo "List file path required" >&2
@@ -230,6 +247,7 @@ git.clone.list() {
 		[[ -n "${line}" ]] && remote_list+=("$line")
 	done <"${list_file}"
 
+	eval "$(dry_run_wrapper)"
 	for remote in "${remote_list[@]}"; do
 		local target_dir="${repo_root}/$(git.url.to_dir "${remote}")"
 
@@ -238,12 +256,7 @@ git.clone.list() {
 			continue
 		}
 
-		local run="mkdir -p '${target_dir}' && git -C '${repo_root}' clone '${remote}' '${target_dir}'"
-		${dry_run} && {
-			echo "${run}"
-			continue
-		}
-		eval "${run}"
+		run_cmd mkdir -p "${target_dir}" && run_cmd git -C "${repo_root}" clone "${remote}" "${target_dir}"
 	done
 }
 
@@ -320,6 +333,64 @@ git.clone.list() {
 # 		echo "$d"
 # 	done
 # }
-register_simple_completion "git.dir.check" "-n" "--dry-run"
-register_simple_completion "git.url.to_dir"
-register_simple_completion "git.clone.to_dir"
+
+git.remote.set_url() {
+	local remote_name="origin" user="" repo="" host_suffix="gh" show_help=0 dryrun=0
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		-h | --help)
+			show_help=1
+			shift
+			;;
+		-n | --dry-run)
+			dryrun=1
+			shift
+			;;
+		-r | --remote)
+			remote_name="$2"
+			shift 2
+			;;
+		-u | --user)
+			user="$2"
+			shift 2
+			;;
+		-p | --project)
+			repo="$2"
+			shift 2
+			;;
+		-s | --host-suffix)
+			host_suffix="$2"
+			shift 2
+			;;
+		-*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
+		*) shift ;;
+		esac
+	done
+
+	eval "$(build_usage "GIT_REMOTE_SET_URL" "${FUNCNAME[0]}" "" "Sets git remote URL to SSH format derived from cwd.")"
+	((show_help)) && {
+		printf '%s\n' "$usage"
+		return 0
+	}
+
+	dep_check git || return
+
+	[[ -z "${user}" ]] && user="$(basename "$(dirname "$(pwd)")")"
+	[[ -z "${repo}" ]] && repo="$(basename "$(pwd)")"
+
+	local url="git@${user}.${host_suffix}:${user}/${repo}.git"
+	eval "$(dry_run_wrapper)"
+	run_cmd git remote set-url "${remote_name}" "${url}"
+}
+
+register_completion "git.dir.check" "GIT_DIR_CHECK"
+register_completion "git.url.to_dir" "GIT_URL_TO_DIR"
+register_completion "git.clone.to_dir" "GIT_CLONE_TO_DIR"
+register_completion "git.clone.list" "GIT_CLONE_LIST"
+register_completion "git.remote.set_url" "GIT_REMOTE_SET_URL"
+
+export -f git.dir.check git.url.to_dir git.clone.to_dir git.clone.list git.remote.set_url
