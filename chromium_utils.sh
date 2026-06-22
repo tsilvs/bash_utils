@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# === Chromium Profile Management — Feature Backlog ===
+# === Chromium Profile Management - Feature Backlog ===
 # See BRD: docs/feat/chromium/0.req/BRD.md
 #
 # Phase 1 (Foundation):    profile.ls, profile.info, profile.create, safety guards

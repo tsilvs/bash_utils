@@ -6,7 +6,7 @@ source "${SCRIPT_DIR}/lib/cli.sh"
 
 # source "$(dirname "${BASH_SOURCE[0]}")/lib/fn.sh"
 
-# txt.wmk.rm option definitions (parallel arrays — reused in usage + completion)
+# txt.wmk.rm option definitions (parallel arrays - reused in usage + completion)
 # index:                          0            1          2           3
 _TXT_WMK_RM_OPTS_SHORT=(-i -o -n -h)
 _TXT_WMK_RM_OPTS_LONG=(--inplace --output --dry-run --help)

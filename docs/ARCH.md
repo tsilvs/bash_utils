@@ -1,8 +1,8 @@
-# Architecture — Library Extraction & Code Style Migration
+# Architecture - Library Extraction & Code Style Migration
 
 ## 1. Current State
 
-Two code styles coexist — NEW (8 files) and OLD (5 files + 3 skeletons):
+Two code styles coexist - NEW (8 files) and OLD (5 files + 3 skeletons):
 
 | Style        | Files                                                                                                      | Key Traits                                                                                     |
 | ------------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -30,7 +30,7 @@ lib/
 └── completion.sh  # Completion generator: boilerplate _fn_complete template
 ```
 
-### Layer 1 — `lib/bashlib.sh`
+### Layer 1 - `lib/bashlib.sh`
 
 Purpose: stateless utility functions used across all scripts.
 
@@ -93,7 +93,7 @@ cleanup_temp() {
 export -f dep_check validate_input ext_check make_temp cleanup_temp
 ```
 
-### Layer 2 — `lib/cli.sh`
+### Layer 2 - `lib/cli.sh`
 
 Purpose: option metadata arrays → usage string, arg parsing, validation.
 
@@ -144,7 +144,7 @@ EOF
 # Sets local variables: dryrun, showhelp, and per-option targets
 # Returns number of consumed args via _PARSED_SHIFT
 parse_opts() {
-    # Complex due to bash scoping — requires eval-based injection into caller
+    # Complex due to bash scoping - requires eval-based injection into caller
     # Better approach: inline helper that generates the case block
     :
 }
@@ -152,7 +152,7 @@ parse_opts() {
 
 Due to bash scoping limits, the option parsing is better served as a **generator** that outputs the `while/case` block to `eval` in caller scope, rather than a function call. But this adds complexity. A pragmatic middle ground: keep opt metadata + usage builder shared, keep per-function `while/case` inline (most readable).
 
-### Layer 3 — `lib/completion.sh`
+### Layer 3 - `lib/completion.sh`
 
 Purpose: single completion generator for all `_fn_complete` boilerplate.
 
@@ -197,7 +197,7 @@ export -f register_completion
 
 ## 3. Migration Plan
 
-### Phase 1 — Build Libraries (this sprint)
+### Phase 1 - Build Libraries (this sprint)
 
 | File                | Action | Details                                                                            |
 | ------------------- | ------ | ---------------------------------------------------------------------------------- |
@@ -205,7 +205,7 @@ export -f register_completion
 | `lib/cli.sh`        | Create | Add build_usage, register_completion; usage builder from metadata arrays           |
 | `lib/completion.sh` | Create | Add register_completion helper (or merge into cli.sh)                              |
 
-### Phase 2 — Wire Libraries Into NEW Files
+### Phase 2 - Wire Libraries Into NEW Files
 
 All 9 NEW-style files get `source` line at top, function bodies refactored to use lib calls.
 
@@ -221,14 +221,14 @@ All 9 NEW-style files get `source` line at top, function bodies refactored to us
 | `adb_utils.sh`     | ~10 lines removed  | dep_check                                                                                                                  |
 | `pkg_utils.sh`     | ~5 lines removed   | dep_check                                                                                                                  |
 
-### Phase 3 — Migrate MIXED Files
+### Phase 3 - Migrate MIXED Files
 
 | File                 | Action                        | Details                                                                        |
 | -------------------- | ----------------------------- | ------------------------------------------------------------------------------ |
 | `alias_functions.sh` | Refactor old fns to new style | Dot-namespace bare fns, add `export -f`, add completions for multi-opt fns     |
 | `podman_utils.sh`    | Refactor old fns to new style | Replace `[[ " $* " =~ ' --help ' ]]` → `while/case`, heredoc help, `export -f` |
 
-### Phase 4 — Rewrite OLD Files
+### Phase 4 - Rewrite OLD Files
 
 | File                     | Action         | Details                                                                                           |
 | ------------------------ | -------------- | ------------------------------------------------------------------------------------------------- |
@@ -238,7 +238,7 @@ All 9 NEW-style files get `source` line at top, function bodies refactored to us
 | `encode_decode_utils.sh` | Rewrite        | Namespace (`encode.img2base64`), option parsing                                                   |
 | `docker_utils.sh`        | Rewrite        | Namespace (`docker.user.group.add` already OK), add `while/case` to multi-opt fns, `export -f`    |
 
-### Phase 5 — Populate SKELETON Files
+### Phase 5 - Populate SKELETON Files
 
 | File               | Action                                     |
 | ------------------ | ------------------------------------------ |

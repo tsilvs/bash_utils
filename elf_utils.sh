@@ -84,7 +84,7 @@ _elf_strings_one() {
 	rm -f "$tmp"
 }
 
-# Print strings from ELF — entire file, one section, or all sections
+# Print strings from ELF - entire file, one section, or all sections
 #
 # Usage: elf.strings [OPTIONS] ELF
 #   --section NAME        Strings from named section only

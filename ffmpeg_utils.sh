@@ -665,7 +665,7 @@ _FFMPEG_MP3_ORGANIZE_OPTS_DESC=(
 )
 
 # ffmpeg.mp3.organize: move MP3 files into folder structure based on ID3 tags
-# Pattern variables: ${artist} ${album} ${title} — no eval, safe substitution
+# Pattern variables: ${artist} ${album} ${title} - no eval, safe substitution
 ffmpeg.mp3.organize() {
 	local deps=(ffprobe)
 	for d in "${deps[@]}"; do
@@ -748,7 +748,7 @@ Examples:
 				continue
 			}
 
-		# Safe pattern expansion — no eval
+		# Safe pattern expansion - no eval
 		local target="$pattern"
 		target="${target//\$\{artist\}/$artist}"
 		target="${target//\$\{album\}/$album}"
@@ -1012,7 +1012,7 @@ _ffmpeg.mkv.lang_norm() {
 
 # _ffmpeg.mkv.parse_lang_opts LANG_STR → sets assoc array _LANG_MAP[type:index]=code
 # LANG_STR format: "audio:0:eng,audio:1:jpn,sub:0:eng"
-# Sets caller-scope _LANG_MAP via nameref — caller must declare -A _LANG_MAP first
+# Sets caller-scope _LANG_MAP via nameref - caller must declare -A _LANG_MAP first
 _ffmpeg.mkv.parse_lang_opts() {
 	local str="$1"
 	local -n _map="$2"
@@ -1436,7 +1436,7 @@ Examples:
 		fi
 
 		if [[ -z "$pfx" ]]; then
-			echo "Warning: no prefix match for $f — skipping" >&2
+			echo "Warning: no prefix match for $f - skipping" >&2
 			continue
 		fi
 		_groups["$pfx"]+="$f"$'\n'
@@ -1452,16 +1452,16 @@ Examples:
 			[[ -n "$line" ]] && grp_files+=("$line")
 		done <<< "${_groups[$pfx]}"
 
-		# Lone file — no peers
+		# Lone file - no peers
 		if [[ ${#grp_files[@]} -eq 1 ]]; then
-			echo "Warning: group '$pfx' has only one file (${grp_files[0]}) — skipping" >&2
+			echo "Warning: group '$pfx' has only one file (${grp_files[0]}) - skipping" >&2
 			ret=1
 			continue
 		fi
 
 		local out_file="$outdir/${pfx}.mkv"
 		if [[ -f "$out_file" ]]; then
-			echo "Warning: output exists: $out_file — skipping group '$pfx'" >&2
+			echo "Warning: output exists: $out_file - skipping group '$pfx'" >&2
 			ret=1
 			continue
 		fi
@@ -1507,7 +1507,7 @@ _FFMPEG_MKV_SEQ_OPTS_DESC=(
 
 # ffmpeg.mkv.seq: encode an image sequence into an MKV video track.
 # Accepts explicit FILE... list or --pattern GLOB. Sorts by name or mtime.
-# Nautilus/KDE passes files in arbitrary order — always sort before encoding.
+# Nautilus/KDE passes files in arbitrary order - always sort before encoding.
 #
 # TODO(post-MVP): --audio FILE: attach audio track to output MKV (calls ffmpeg.mkv.merge)
 # TODO(post-MVP): --loop N: repeat sequence N times
@@ -1567,7 +1567,7 @@ Examples:
 	# Collect files from --pattern or positional args
 	local -a raw_files=()
 	if [[ -n "$pattern" ]]; then
-		# glob expansion in current shell — safe, no eval
+		# glob expansion in current shell - safe, no eval
 		local -a globbed=($pattern)
 		[[ ${#globbed[@]} -eq 0 || ! -f "${globbed[0]}" ]] && \
 			{ echo "Error: --pattern matched no files: $pattern" >&2; return 1; }
