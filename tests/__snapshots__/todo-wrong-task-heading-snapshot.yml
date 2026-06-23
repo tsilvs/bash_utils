@@ -1,0 +1,43 @@
+id: todo-wrong-task-heading
+snapshots:
+  ? |
+    # TODO
+
+    ## Tasks
+
+    #### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+  : fixed: |
+      # TODO
+
+      ## Tasks
+
+      ### My Task
+      #### Context
+
+      + note
+
+      #### Definition
+
+      + [ ] step
+
+      #### Acceptance / DoD
+
+      + [ ] done
+    labels:
+    - source: |
+        #### My Task
+      style: primary
+      start: 18
+      end: 31

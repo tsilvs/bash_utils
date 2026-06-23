@@ -70,6 +70,47 @@ invalid:
     some content
 
 ---
+id: todo-wrong-task-heading
+valid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+invalid:
+  - |
+    # TODO
+
+    ## Tasks
+
+    #### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    + [ ] step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+
+---
 id: todo-task-missing-context
 valid:
   - |
@@ -258,6 +299,24 @@ invalid:
     #### Definition
 
     + plain step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+  - |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    - plain dash step
 
     #### Acceptance / DoD
 

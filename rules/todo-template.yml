@@ -53,7 +53,24 @@ rule:
 
 ---
 # ---------------------------------------------------------------------------
-# 3. ### task section missing #### Context subsection
+# 3. h4 heading used as task name (must be ###, not ####)
+# ---------------------------------------------------------------------------
+id: todo-wrong-task-heading
+language: markdown
+message: "TODO.md: task heading '#### ...' must be '### ...' — h4 reserved for Context/Definition/DoD"
+severity: error
+files:
+  - "**/TODO.md"
+rule:
+  pattern: "#### $TITLE"
+  not:
+    has:
+      regex: "^(Context|Definition|Acceptance / DoD)$"
+fix: "### $TITLE"
+
+---
+# ---------------------------------------------------------------------------
+# 4. ### task section missing #### Context subsection
 # ---------------------------------------------------------------------------
 id: todo-task-missing-context
 language: markdown
@@ -141,6 +158,7 @@ rule:
       kind: atx_heading
       has:
         regex: "^Context$"
+# TODO: Add `fix:`
 
 ---
 # ---------------------------------------------------------------------------
@@ -160,7 +178,7 @@ rule:
       kind: atx_heading
       has:
         regex: "^Definition$"
-  regex: "^\\+ [^\\[]"
+  regex: "^[-+*] [^\\[]"
 
 ---
 # ---------------------------------------------------------------------------
@@ -180,4 +198,4 @@ rule:
       kind: atx_heading
       has:
         regex: "^Acceptance / DoD$"
-  regex: "^\\+ [^\\[]"
+  regex: "^[-+*] [^\\[]"

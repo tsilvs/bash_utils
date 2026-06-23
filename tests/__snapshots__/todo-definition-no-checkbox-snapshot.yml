@@ -42,3 +42,45 @@ snapshots:
       style: secondary
       start: 53
       end: 84
+  ? |
+    # TODO
+
+    ## Tasks
+
+    ### My Task
+
+    #### Context
+
+    + note
+
+    #### Definition
+
+    - plain dash step
+
+    #### Acceptance / DoD
+
+    + [ ] done
+  : labels:
+    - source: |+
+        - plain dash step
+
+      style: primary
+      start: 70
+      end: 89
+    - source: Definition
+      style: secondary
+      start: 58
+      end: 68
+    - source: |
+        #### Definition
+      style: secondary
+      start: 53
+      end: 69
+    - source: |+
+        #### Definition
+
+        - plain dash step
+
+      style: secondary
+      start: 53
+      end: 89
