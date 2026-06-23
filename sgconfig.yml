@@ -1,4 +1,23 @@
 ruleDirs:
-  - rules
+  - ".ci/lint/nix/rules"
 testConfigs:
-  - testDir: tests
+  - testDir: ".ci/lint/nix/tests"
+
+# Better schema would be:
+#
+# ```yml
+# rules:
+# 	- config:
+# 		- otherKey1: val
+# 		- otherKey2: val
+# 	- dirs:
+# 		- "path/to/dir1"
+# 		- "path/to/dir2"
+# tests:
+# 	- config:
+# 		- otherKey1: val
+# 		- otherKey2: val
+# 	- dirs:
+# 		- "path/to/dir1"
+# 		- "path/to/dir2"
+# ```
