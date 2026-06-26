@@ -5,28 +5,28 @@ source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
 
 # ── yt.srt option metadata ────────────────────────────────────────────────────
-_YT_SRT_OPTS_SHORT=(-h -l)
-_YT_SRT_OPTS_LONG=(--help --lang)
-_YT_SRT_OPTS_ARG=("" "LANG")
-_YT_SRT_OPTS_DESC=("Display this help message" "Subtitle language code (default: en)")
+YT_SRT_OPTS_SHORT=(-h -l)
+YT_SRT_OPTS_LONG=(--help --lang)
+YT_SRT_OPTS_ARG=("" "LANG")
+YT_SRT_OPTS_DESC=("Display this help message" "Subtitle language code (default: en)")
 
 # ── yt.mp3 option metadata ────────────────────────────────────────────────────
-_YT_MP3_OPTS_SHORT=(-h)
-_YT_MP3_OPTS_LONG=(--help)
-_YT_MP3_OPTS_ARG=("")
-_YT_MP3_OPTS_DESC=("Display this help message")
+YT_MP3_OPTS_SHORT=(-h)
+YT_MP3_OPTS_LONG=(--help)
+YT_MP3_OPTS_ARG=("")
+YT_MP3_OPTS_DESC=("Display this help message")
 
 # ── yt.mp4 option metadata ────────────────────────────────────────────────────
-_YT_MP4_OPTS_SHORT=(-h -q)
-_YT_MP4_OPTS_LONG=(--help --quality)
-_YT_MP4_OPTS_ARG=("" "FORMAT")
-_YT_MP4_OPTS_DESC=("Display this help message" "yt-dlp format string")
+YT_MP4_OPTS_SHORT=(-h -q)
+YT_MP4_OPTS_LONG=(--help --quality)
+YT_MP4_OPTS_ARG=("" "FORMAT")
+YT_MP4_OPTS_DESC=("Display this help message" "yt-dlp format string")
 
 # ── yt.chapters option metadata ───────────────────────────────────────────────
-_YT_CHAPTERS_OPTS_SHORT=(-h)
-_YT_CHAPTERS_OPTS_LONG=(--help)
-_YT_CHAPTERS_OPTS_ARG=("")
-_YT_CHAPTERS_OPTS_DESC=("Display this help message")
+YT_CHAPTERS_OPTS_SHORT=(-h -n)
+YT_CHAPTERS_OPTS_LONG=(--help --no-keep)
+YT_CHAPTERS_OPTS_ARG=("" "")
+YT_CHAPTERS_OPTS_DESC=("Display this help message" "Delete full file after splitting chapters")
 
 yt.srt() {
 	dep_check yt-dlp
@@ -131,12 +131,16 @@ yt.mp4() {
 
 yt.chapters() {
 	dep_check yt-dlp
-	local show_help=0
+	local show_help=0 no_keep=0
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
 			show_help=1
+			shift
+			;;
+		-n | --no-keep)
+			no_keep=1
 			shift
 			;;
 		-*)
@@ -159,7 +163,8 @@ yt.chapters() {
 	}
 	local url="$1"
 	shift
-	local dir_name
+	local dir_name extra_args=()
+	((no_keep)) && extra_args+=(--no-keep-video)
 	dir_name=$(yt-dlp --print "%(title)s" "$url") || return 1
 	echo "Output: \"$dir_name\""
 	mkdir -p "$dir_name" || return 1
@@ -170,10 +175,11 @@ yt.chapters() {
 		--audio-format mp3 \
 		--download-sections "*0:00-inf" \
 		--split-chapters \
-		--output "chapter:%(section_number)s %(section_title)s.%(ext)s" \
+		--output "chapter:%(section_number)02d %(section_title)s.%(ext)s" \
 		--paths "$dir_name" \
 		--no-mtime \
 		--no-playlist \
+		"${extra_args[@]}" \
 		"$@" "$url"
 }
 
