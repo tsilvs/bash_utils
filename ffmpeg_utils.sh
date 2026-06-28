@@ -1753,16 +1753,16 @@ _ffmpeg.video.compress_complete() {
 complete -F _ffmpeg.video.compress_complete ffmpeg.video.compress
 
 # ── ffmpeg.video.scenes option metadata ───────────────────────────────────────
-# Scene-change threshold: lower → more frames, higher → fewer key stillframes.
-# 0.3 is sweet spot per statistical analysis: captures ~1 frame per distinct
-# camera angle / scene, avoids false positives on pans/dissolves.
+# ffmpeg select=gt(scene,T) computes inter-frame difference score 0–1.
+# Frame is kept when score > T. Lower T = more frames, higher = fewer.
+# 0.2: catches most cuts + dissolves, ~1 keyframe per camera change.
 #                                                 0             1          2       3
 _FFMPEG_VIDEO_SCENES_OPTS_SHORT=(               -o            -t         -n      -h)
 _FFMPEG_VIDEO_SCENES_OPTS_LONG=(           --output    --threshold   --dry-run  --help)
 _FFMPEG_VIDEO_SCENES_OPTS_ARG=(           "PATTERN"        "0.N"        ""      "")
 _FFMPEG_VIDEO_SCENES_OPTS_DESC=(
 	"Output filename pattern (single input only; default: INPUT_scene_%03d.png)"
-	"Scene-change detection threshold 0.0–1.0 (default: 0.3)"
+	"Scene-change detection threshold 0.0–1.0 (default: 0.2)"
 	"Print command without executing"
 	"Show help"
 )
@@ -1779,7 +1779,7 @@ ffmpeg.video.scenes() {
 		}
 	done
 
-	local output="" threshold="0.3" dryrun=0 showhelp=0
+	local output="" threshold="0.2" dryrun=0 showhelp=0
 
 	local usage_opts="" i
 	for ((i = 0; i < ${#_FFMPEG_VIDEO_SCENES_OPTS_SHORT[@]}; i++)); do
