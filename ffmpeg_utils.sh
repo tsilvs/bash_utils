@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/bashlib.sh"
+
 # Shared: supported video extensions
 _FFMPEG_VIDEO_EXTS=("mp4" "mkv" "avi" "mov" "flv" "wmv" "webm" "m4v" "mpg" "mpeg")
 
@@ -1748,3 +1751,106 @@ _ffmpeg.video.compress_complete() {
 	esac
 }
 complete -F _ffmpeg.video.compress_complete ffmpeg.video.compress
+
+# ── ffmpeg.video.scenes option metadata ───────────────────────────────────────
+# Scene-change threshold: lower → more frames, higher → fewer key stillframes.
+# 0.3 is sweet spot per statistical analysis: captures ~1 frame per distinct
+# camera angle / scene, avoids false positives on pans/dissolves.
+#                                                 0             1          2       3
+_FFMPEG_VIDEO_SCENES_OPTS_SHORT=(               -o            -t         -n      -h)
+_FFMPEG_VIDEO_SCENES_OPTS_LONG=(           --output    --threshold   --dry-run  --help)
+_FFMPEG_VIDEO_SCENES_OPTS_ARG=(           "PATTERN"        "0.N"        ""      "")
+_FFMPEG_VIDEO_SCENES_OPTS_DESC=(
+	"Output filename pattern (single input only; default: INPUT_scene_%03d.png)"
+	"Scene-change detection threshold 0.0–1.0 (default: 0.3)"
+	"Print command without executing"
+	"Show help"
+)
+
+# ffmpeg.video.scenes: extract key stillframes at scene-change boundaries.
+# Uses ffmpeg's scene-change detection (select filter) + variable frame rate.
+ffmpeg.video.scenes() {
+	local deps=(ffmpeg)
+	for d in "${deps[@]}"; do
+		command -v "$d" >/dev/null 2>&1 || {
+			echo "Error: dependency missing: $d" >&2
+			# shellcheck disable=SC2317
+			return 127 2>/dev/null || exit 127
+		}
+	done
+
+	local output="" threshold="0.3" dryrun=0 showhelp=0
+
+	local usage_opts="" i
+	for ((i = 0; i < ${#_FFMPEG_VIDEO_SCENES_OPTS_SHORT[@]}; i++)); do
+		local sig="${_FFMPEG_VIDEO_SCENES_OPTS_SHORT[$i]}, ${_FFMPEG_VIDEO_SCENES_OPTS_LONG[$i]}${_FFMPEG_VIDEO_SCENES_OPTS_ARG[$i]:+ ${_FFMPEG_VIDEO_SCENES_OPTS_ARG[$i]}}"
+		local line
+		printf -v line '\t%-36s%s\n' "$sig" "${_FFMPEG_VIDEO_SCENES_OPTS_DESC[$i]}"
+		usage_opts+="$line"
+	done
+
+	local fn="${FUNCNAME[0]}"
+	local usage="Usage: $fn [OPTIONS] FILE [FILE...]
+Extract key stillframes at scene-change boundaries as PNG images.
+
+Supported extensions: ${_FFMPEG_VIDEO_EXTS[*]}
+
+Options:
+$usage_opts
+Examples:
+	$fn video.mp4
+	$fn -t 0.4 movie.mkv
+	$fn -o 'frames/scene_%04d.png' clip.mp4"
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		-h | --help)       showhelp=1; shift ;;
+		-o | --output)     output="$2"; shift 2 ;;
+		-t | --threshold)  threshold="$2"; shift 2 ;;
+		-n | --dry-run)    dryrun=1; shift ;;
+		*) break ;;
+		esac
+	done
+
+	eval "$(dry_run_wrapper)"
+
+	((showhelp)) && { printf '%s\n' "$usage"; return 0; }
+	[[ $# -eq 0 ]] && { echo "Error: no input file" >&2; return 1; }
+	[[ -n "$output" && $# -gt 1 ]] && { echo "Error: --output requires single input" >&2; return 1; }
+
+	# Validate threshold range
+	if ! awk -v t="$threshold" 'BEGIN { exit (t >= 0 && t <= 1 ? 0 : 1) }'; then
+		echo "Error: threshold must be 0.0–1.0, got '$threshold'" >&2
+		return 1
+	fi
+
+	local ret=0
+	for input in "$@"; do
+		[[ "$input" == file://* ]] && { echo "Error: URI passed; decode to path first: $input" >&2; ret=1; continue; }
+		[[ ! -f "$input" ]] && { echo "Skip: $input (not found)" >&2; ret=1; continue; }
+		local ext="${input##*.}"; ext="${ext,,}"
+		local valid=0
+		for e in "${_FFMPEG_VIDEO_EXTS[@]}"; do [[ "$ext" == "$e" ]] && { valid=1; break; }; done
+		(( !valid )) && { echo "Skip: $input (unsupported: $ext)" >&2; ret=1; continue; }
+
+		local base="${input%.*}"
+		local out="${output:-${base}_scene_%03d.png}"
+
+		run_cmd ffmpeg -i "$input" \
+			-vf "select='gt(scene,${threshold})'" \
+			-vsync vfr \
+			-y "$out" || { echo "Error: ffmpeg failed: $input" >&2; ret=1; }
+	done
+	return $ret
+}
+export -f ffmpeg.video.scenes
+
+_ffmpeg.video.scenes_complete() {
+	local cur="${COMP_WORDS[COMP_CWORD]}"
+	local all_opts=("${_FFMPEG_VIDEO_SCENES_OPTS_SHORT[@]}" "${_FFMPEG_VIDEO_SCENES_OPTS_LONG[@]}")
+	case "$cur" in
+	-*) mapfile -t COMPREPLY < <(compgen -W "${all_opts[*]}" -- "$cur") ;;
+	*)  mapfile -t COMPREPLY < <(compgen -f -- "$cur") ;;
+	esac
+}
+complete -F _ffmpeg.video.scenes_complete ffmpeg.video.scenes
