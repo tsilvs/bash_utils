@@ -3,6 +3,7 @@
 # === Chromium Profile Management - Feature Backlog ===
 # See BRD: docs/feat/chromium/0.req/BRD.md
 #
+# Phase 0 (Lib):           resolve profile paths & names, handle SQLite, store reusable SQL Queries as files
 # Phase 1 (Foundation):    profile.ls, profile.info, profile.create, safety guards
 # Phase 2 (Read/Query):    port.keywords, port.bookmarks
 # Phase 3 (Write/Mutate):  profile.clone, profile.rm
