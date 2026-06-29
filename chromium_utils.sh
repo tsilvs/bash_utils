@@ -814,19 +814,21 @@ Examples:
 
 	# Register in Local State so chromium.profile.ls sees the new profile
 	local local_state="$config_dir/Local State"
-	if [[ -f "$local_state" ]]; then
-		if ((dryrun)); then
-			echo "DRY-RUN: register $dir_name in Local State"
-		else
-			local tmp
-			tmp="$(mktemp)" || return 1
-			jq --arg d "$dir_name" --arg n "$display_name" \
-				'.profile.info_cache[$d] = {name: $n}' \
-				"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
-				rm -f "$tmp"
-				return 1
-			}
-		fi
+	[[ ! -f "$local_state" ]] && {
+		echo "Error: Local State not found: $local_state — profile dir created but not registered" >&2
+		return 1
+	}
+	if ((dryrun)); then
+		echo "DRY-RUN: register $dir_name in Local State"
+	else
+		local tmp
+		tmp="$(mktemp)" || return 1
+		jq --arg d "$dir_name" --arg n "$display_name" \
+			'.profile.info_cache[$d] = {name: $n}' \
+			"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
+			rm -f "$tmp"
+			return 1
+		}
 	fi
 
 	printf 'Created: %s (%s)\n' "$display_name" "$profile_dir"
@@ -971,20 +973,22 @@ Examples:
 	fi
 
 	# Register in Local State so chromium.profile.ls sees the copied profile
-	if [[ -f "$local_state" ]]; then
-		local dst_dir_name="${dst_dir##*/}"
-		if ((dryrun)); then
-			echo "DRY-RUN: register $dst_dir_name in Local State"
-		else
-			local tmp2
-			tmp2="$(mktemp)" || return 1
-			jq --arg d "$dst_dir_name" --arg n "$new_name" \
-				'.profile.info_cache[$d] = {name: $n}' \
-				"$local_state" >"$tmp2" && mv "$tmp2" "$local_state" || {
-				rm -f "$tmp2"
-				return 1
-			}
-		fi
+	local dst_dir_name="${dst_dir##*/}"
+	[[ ! -f "$local_state" ]] && {
+		echo "Error: Local State not found: $local_state — profile dir created but not registered" >&2
+		return 1
+	}
+	if ((dryrun)); then
+		echo "DRY-RUN: register $dst_dir_name in Local State"
+	else
+		local tmp2
+		tmp2="$(mktemp)" || return 1
+		jq --arg d "$dst_dir_name" --arg n "$new_name" \
+			'.profile.info_cache[$d] = {name: $n}' \
+			"$local_state" >"$tmp2" && mv "$tmp2" "$local_state" || {
+			rm -f "$tmp2"
+			return 1
+		}
 	fi
 
 	printf 'Copied: %s → %s (%s)\n' "$src_name" "$new_name" "$dst_dir"

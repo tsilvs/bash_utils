@@ -49,4 +49,4 @@ docker.img.env() {
 # + Port `podman_utils`
 # + Add `docker.cont.vol` with filters by id, name & other params
 
-export -f docker.images.ls docker.root.dir docker.img.env docker.img.exportAll docker.user.group.add
+export -f docker.root.dir docker.img.env docker.user.group.add
