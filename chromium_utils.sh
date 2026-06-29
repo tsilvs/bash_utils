@@ -615,7 +615,19 @@ Examples:
 		return 1
 	}
 
-	jq -r '.profile.info_cache | to_entries[] | "\(.key)\t\(.value.name)"' "$local_state"
+	local -a entries
+	mapfile -t entries < <(jq -r '.profile.info_cache | to_entries[] | "\(.key)\t\(.value.name)"' "$local_state")
+
+	local max=0 entry key
+	for entry in "${entries[@]}"; do
+		key="${entry%%$'\t'*}"
+		((${#key} > max)) && max=${#key}
+	done
+	local width=$((max + 3))
+
+	for entry in "${entries[@]}"; do
+		printf "%-${width}s%s\n" "${entry%%$'\t'*}" "${entry#*$'\t'}"
+	done
 }
 
 # ── chromium.profile.read option metadata ─────────────────────────────────────
@@ -800,18 +812,36 @@ Examples:
 		}' >"$profile_dir/Preferences" || return 1
 	fi
 
+	# Register in Local State so chromium.profile.ls sees the new profile
+	local local_state="$config_dir/Local State"
+	if [[ -f "$local_state" ]]; then
+		if ((dryrun)); then
+			echo "DRY-RUN: register $dir_name in Local State"
+		else
+			local tmp
+			tmp="$(mktemp)" || return 1
+			jq --arg d "$dir_name" --arg n "$display_name" \
+				'.profile.info_cache[$d] = {name: $n}' \
+				"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
+				rm -f "$tmp"
+				return 1
+			}
+		fi
+	fi
+
 	printf 'Created: %s (%s)\n' "$display_name" "$profile_dir"
 }
 
 # ── chromium.profile.copy option metadata ─────────────────────────────────────
-#                                              0          1      2          3     4
-_CHROMIUM_PROFILE_COPY_OPTS_SHORT=(-b -t -s -n -h)
-_CHROMIUM_PROFILE_COPY_OPTS_LONG=(--browser --type --suffix --dry-run --help)
-_CHROMIUM_PROFILE_COPY_OPTS_ARG=("BROWSER" "native|flatpak" "SUFFIX" "" "")
+#                                              0          1      2          3     4          5
+_CHROMIUM_PROFILE_COPY_OPTS_SHORT=(-b -t -s -k -n -h)
+_CHROMIUM_PROFILE_COPY_OPTS_LONG=(--browser --type --suffix --keep-sessions --dry-run --help)
+_CHROMIUM_PROFILE_COPY_OPTS_ARG=("BROWSER" "native|flatpak" "SUFFIX" "" "" "")
 _CHROMIUM_PROFILE_COPY_OPTS_DESC=(
 	"Browser binary name (default: chromium)"
 	"Installation type: native or flatpak (default: native)"
 	"Display name suffix for copy (default: ' (Copy)')"
+	"Keep Sessions/ files in copy (default: delete them)"
 	"Print actions without executing"
 	"Show help"
 )
@@ -832,6 +862,7 @@ chromium.profile.copy() {
 	local usage="Usage: $fn [OPTIONS] SOURCE
 Copy a profile to the next available 'Profile N' dir slot.
 Display name is suffixed; exit state is reset to clean.
+Sessions files are deleted from the copy by default (use --keep-sessions to preserve).
 
 SOURCE: dir name or display name (resolved via chromium.profile.path).
 
@@ -843,7 +874,7 @@ Examples:
 	$fn --suffix ' (Backup)' Default
 	$fn -b google-chrome 'Profile 3'"
 
-	local browser="chromium" type="native" suffix=" (Copy)" dryrun=0 showhelp=0
+	local browser="chromium" type="native" suffix=" (Copy)" keep_sessions=0 dryrun=0 showhelp=0
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
@@ -861,6 +892,10 @@ Examples:
 		-s | --suffix)
 			suffix="$2"
 			shift 2
+			;;
+		-k | --keep-sessions)
+			keep_sessions=1
+			shift
 			;;
 		-n | --dry-run)
 			dryrun=1
@@ -889,8 +924,13 @@ Examples:
 	local src_path
 	src_path="$(chromium.profile.path -b "$browser" -t "$type" "$src")" || return 1
 
+	# Prefer Local State name (authoritative, same source as profile.ls) over Preferences
+	local src_dir_key="${src_path##*/}"
+	local local_state="$config_dir/Local State"
 	local src_name
-	src_name="$(chromium.profile.name -b "$browser" -t "$type" "${src_path##*/}")" || src_name="$src"
+	src_name="$(jq -r --arg d "$src_dir_key" '.profile.info_cache[$d].name // empty' "$local_state" 2>/dev/null)"
+	[[ -z "$src_name" ]] && src_name="$(chromium.profile.name -b "$browser" -t "$type" "$src_dir_key" 2>/dev/null)"
+	[[ -z "$src_name" ]] && src_name="$src"
 
 	local n=1
 	while [[ -d "$config_dir/Profile $n" ]]; do ((n++)); done
@@ -916,6 +956,35 @@ Examples:
 			rm -f "$tmp"
 			return 1
 		}
+	fi
+
+	# Delete sessions from copy so it doesn't inherit open tabs
+	local src_sessions_dir="$src_path/Sessions"
+	if [[ -d "$src_sessions_dir" ]]; then
+		if ((!keep_sessions)); then
+			if ((dryrun)); then
+				echo "DRY-RUN: delete Sessions/Session_* Sessions/Tabs_* from copy"
+			else
+				rm -f "$dst_dir/Sessions"/Session_* "$dst_dir/Sessions"/Tabs_*
+			fi
+		fi
+	fi
+
+	# Register in Local State so chromium.profile.ls sees the copied profile
+	if [[ -f "$local_state" ]]; then
+		local dst_dir_name="${dst_dir##*/}"
+		if ((dryrun)); then
+			echo "DRY-RUN: register $dst_dir_name in Local State"
+		else
+			local tmp2
+			tmp2="$(mktemp)" || return 1
+			jq --arg d "$dst_dir_name" --arg n "$new_name" \
+				'.profile.info_cache[$d] = {name: $n}' \
+				"$local_state" >"$tmp2" && mv "$tmp2" "$local_state" || {
+				rm -f "$tmp2"
+				return 1
+			}
+		fi
 	fi
 
 	printf 'Copied: %s → %s (%s)\n' "$src_name" "$new_name" "$dst_dir"
@@ -1133,20 +1202,20 @@ Examples:
 
 # ── chromium.profile.close-tabs option metadata ───────────────────────────────
 #                                                     0          1      2                  3     4
-_CHROMIUM_PROFILE_CLOSE_TABS_OPTS_SHORT=(-b -t -S -n -h)
-_CHROMIUM_PROFILE_CLOSE_TABS_OPTS_LONG=(--browser --type --clear-sessions --dry-run --help)
+_CHROMIUM_PROFILE_CLOSE_TABS_OPTS_SHORT=(-b -t -k -n -h)
+_CHROMIUM_PROFILE_CLOSE_TABS_OPTS_LONG=(--browser --type --keep-sessions --dry-run --help)
 _CHROMIUM_PROFILE_CLOSE_TABS_OPTS_ARG=("BROWSER" "native|flatpak" "" "" "")
 _CHROMIUM_PROFILE_CLOSE_TABS_OPTS_DESC=(
 	"Browser binary name (default: chromium)"
 	"Installation type: native or flatpak (default: native)"
-	"Also delete Sessions/ files (prevents any restore)"
+	"Keep Sessions/ files intact (default: delete them)"
 	"Print actions without executing"
 	"Show help"
 )
 
-# chromium.profile.close-tabs: mark profile as cleanly exited so Chromium won't restore tabs
-# Sets profile.exit_type=Normal and profile.exited_cleanly=true in Preferences.
-# --clear-sessions additionally deletes Sessions/Session_* and Sessions/Tabs_* files.
+# chromium.profile.close-tabs: prevent tab restore on next Chromium launch
+# Patches Preferences (exit_type=Normal, exited_cleanly=true) and deletes Sessions/Session_* + Sessions/Tabs_*.
+# Use --keep-sessions to skip Sessions deletion.
 chromium.profile.close-tabs() {
 	dep_check jq || return $?
 
@@ -1159,9 +1228,9 @@ chromium.profile.close-tabs() {
 		usage_opts+="$line"
 	done
 	local usage="Usage: $fn [OPTIONS] PROFILE
-Prevent tab restore on next Chromium launch by marking profile as cleanly exited.
-Patches Preferences: profile.exit_type=Normal, profile.exited_cleanly=true.
-Use --clear-sessions to also delete Sessions/Session_* and Sessions/Tabs_* files.
+Prevent tab restore on next Chromium launch.
+Patches Preferences + deletes Sessions/Session_* and Sessions/Tabs_* by default.
+Use --keep-sessions to preserve session files.
 
 PROFILE: dir name or display name (resolved via chromium.profile.path).
 
@@ -1169,10 +1238,10 @@ Options:
 $usage_opts
 Examples:
 	$fn Default
-	$fn --clear-sessions Work
+	$fn --keep-sessions Work
 	$fn -b google-chrome 'Profile 2'"
 
-	local browser="chromium" type="native" clear_sessions=0 dryrun=0 showhelp=0
+	local browser="chromium" type="native" keep_sessions=0 dryrun=0 showhelp=0
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
@@ -1187,8 +1256,8 @@ Examples:
 			type="$2"
 			shift 2
 			;;
-		-S | --clear-sessions)
-			clear_sessions=1
+		-k | --keep-sessions)
+			keep_sessions=1
 			shift
 			;;
 		-n | --dry-run)
@@ -1232,10 +1301,14 @@ Examples:
 		}
 	fi
 
-	if ((clear_sessions)); then
+	if ((!keep_sessions)); then
 		local sessions_dir="$profile_path/Sessions"
 		if [[ -d "$sessions_dir" ]]; then
-			run_cmd bash -c "rm -f \"$sessions_dir\"/Session_* \"$sessions_dir\"/Tabs_*"
+			if ((dryrun)); then
+				echo "DRY-RUN: delete Sessions/Session_* Sessions/Tabs_*"
+			else
+				rm -f "$sessions_dir"/Session_* "$sessions_dir"/Tabs_*
+			fi
 		fi
 	fi
 
