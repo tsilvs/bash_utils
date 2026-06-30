@@ -1,22 +1,28 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
 
 podman.commit() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} CONTAINER_NAME [IMAGE_NAME]
 			Commit container to an image.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -42,17 +48,23 @@ podman.commit() {
 # shellcheck disable=SC2120
 podman.root.dir() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show container location for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -62,17 +74,23 @@ podman.root.dir() {
 # shellcheck disable=SC2120
 podman.conts.manif.path() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show containers manifest path for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -83,17 +101,23 @@ podman.conts.manif.path() {
 # shellcheck disable=SC2120
 podman.conts.manif() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show containers manifest for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -103,17 +127,23 @@ podman.conts.manif() {
 
 podman.cont.manif() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} CONTAINER_NAME
 			Show container manifest for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -137,17 +167,23 @@ podman.cont.cmd() {
 
 podman.cont.env() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Show container internal environment for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -161,17 +197,23 @@ podman.cont.env() {
 
 podman.cont.id() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} CONTAINER_NAME
 			Show container ID for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -181,17 +223,23 @@ podman.cont.id() {
 
 podman.cont.dir() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} CONTAINER_NAME
 			Show container location for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -213,17 +261,23 @@ podman.imgs.pullAll() {
 # shellcheck disable=SC2120
 podman.imgs.manif.path() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show images manifest path for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -234,17 +288,23 @@ podman.imgs.manif.path() {
 # shellcheck disable=SC2120
 podman.imgs.manif() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show images manifest for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -254,20 +314,26 @@ podman.imgs.manif() {
 
 podman.img.manif() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Show image manifest for current context.
 			Params:
-			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			IMG_NAME image name WITH VERSION (e.g. host/image:latest)
 			Options:
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -278,20 +344,26 @@ podman.img.manif() {
 
 podman.img.id() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Show image ID for current context.
 			Params:
-			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			IMG_NAME image name WITH VERSION (e.g. host/image:latest)
 			Options:
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -301,17 +373,23 @@ podman.img.id() {
 
 podman.img.dir() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Show image location for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -364,17 +442,23 @@ podman.img.entry() {
 
 podman.img.env() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Show image internal environment for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -388,20 +472,26 @@ podman.img.env() {
 
 podman.img.mv.root() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]} IMG_NAME
 			Move image to root.
 			Params:
-			IMG_NAME	image name WITH VERSION (e.g. host/image:latest)
+			IMG_NAME image name WITH VERSION (e.g. host/image:latest)
 			Options:
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}
@@ -412,17 +502,23 @@ podman.img.mv.root() {
 # shellcheck disable=SC2120
 podman.conf.path() {
 	local showhelp=0
-	while (( $# )) && [[ "$1" == -* ]]; do
+	while (($#)) && [[ "$1" == -* ]]; do
 		case "$1" in
-			--help|-h) showhelp=1; shift ;;
-			*) echo "Unknown option: $1" >&2; return 1 ;;
+		--help | -h)
+			showhelp=1
+			shift
+			;;
+		*)
+			echo "Unknown option: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	(( showhelp )) && {
+	((showhelp)) && {
 		cat <<-EOF
 			Usage: ${FUNCNAME[0]}
 			Show config location for current context.
-			--help	Show help
+			--help Show help
 		EOF
 		return 0
 	}

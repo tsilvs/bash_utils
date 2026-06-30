@@ -6,16 +6,16 @@
 
 # Get the script's directory
 
-# SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-source "$(dirname "${BASH_SOURCE[0]}")/lib/bashlib.sh"
+source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/rpm_ostree_utils.sh"
 
 # have_cmd() { command -v "$1" &>/dev/null; }
 
 # ---- Debian/Ubuntu (apt) ----------------------------------------------------
 pkgls.deb() {
-		# Prefer dpkg-query to avoid apt headers/noise; falls back to apt list
+	# Prefer dpkg-query to avoid apt headers/noise; falls back to apt list
 	if have_cmd dpkg-query; then
 		dpkg-query -W -f='${binary:Package}\n' 2>/dev/null | sort -u
 	else
@@ -208,5 +208,3 @@ pkgls.all() {
 		pkgls.code
 	fi
 }
-
-

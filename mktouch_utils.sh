@@ -6,7 +6,7 @@
 #   2. ~/.config/mktouch/presets (user)
 #   3. /etc/mktouch/presets (system)
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── mktouch config paths (cascading hierarchy) ───────────────────────────────
 MKT_PRESET_PATHS=(
@@ -14,13 +14,14 @@ MKT_PRESET_PATHS=(
 	"/etc/mktouch/presets"
 	"${HOME}/.config/mktouch/presets"
 	"${HOME}/.mktouchrc"
+	"$(pwd)/.mktouchrc"
 )
 
 # ── mktouch option metadata ───────────────────────────────────────────────────
 #                                           0            1          2       3         4          5
 _MKTOUCH_OPTS_SHORT=(-C -t -n -d -p -l -h)
 _MKTOUCH_OPTS_LONG=(--prefix --tree --dry-run --debug --preset --list-presets --help)
-_MKTOUCH_OPTS_ARG=("DIR" "" "" "" "NAME" "" "")
+_MKTOUCH_OPTS_ARG=("DIR" "" "" "" "NAME..." "" "")
 _MKTOUCH_OPTS_DESC=(
 	"Prefix all paths (git -C style)"
 	"Show tree of created paths"
@@ -58,6 +59,7 @@ mktouch.preset.list() {
 	local seen=()
 
 	for config_file in "${MKT_PRESET_PATHS[@]}"; do
+		# echo "Trying config file: ${config_file}"
 		if [[ -f "$config_file" ]]; then
 			while IFS= read -r line; do
 				[[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -123,7 +125,7 @@ ${usage_opts}
 Presets:
 	Defined in .mktouchrc, ~/.config/mktouch/presets, or /etc/mktouch/presets.
 	$fn presetname       (auto-detected)
-	$fn -p presetname    (explicit)"
+	$fn -p name1 name2   (explicit, space-separated list)"
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
@@ -149,8 +151,11 @@ Presets:
 			shift
 			;;
 		-p | --preset)
-			use_presets+=("$2")
-			shift 2
+			shift
+			while [[ $# -gt 0 && "$1" != -* ]]; do
+				use_presets+=("$1")
+				shift
+			done
 			;;
 		-l | --list-presets)
 			list_presets=1
@@ -184,7 +189,7 @@ Presets:
 	}
 
 	((debug)) && {
-		echo "Debug: SCRIPT_DIR=${SCRIPT_DIR}"
+		echo "Debug: SCRIPT_DIR="${SCRIPT_DIR}"
 		echo "Debug: Config paths:"
 		for p in "${MKT_PRESET_PATHS[@]}"; do
 			local exists="missing"

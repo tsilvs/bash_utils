@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
 
@@ -8,36 +8,54 @@ source "${SCRIPT_DIR}/lib/cli.sh"
 
 csv.merge() {
 	local pattern join_col output=""
-	
+
 	while [[ $# -gt 0 ]]; do
 		case $1 in
-			-p|--pattern) pattern="$2"; shift 2 ;;
-			-j|--joincol) join_col="$2"; shift 2 ;;
-			-o|--output) output="$2"; shift 2 ;;
-			*) echo "Unknown: $1" >&2; return 1 ;;
+		-p | --pattern)
+			pattern="$2"
+			shift 2
+			;;
+		-j | --joincol)
+			join_col="$2"
+			shift 2
+			;;
+		-o | --output)
+			output="$2"
+			shift 2
+			;;
+		*)
+			echo "Unknown: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	
-	[[ -z "$pattern" ]] && { echo "Pattern required" >&2; return 1; }
-	[[ -z "$join_col" ]] && { echo "Join column required" >&2; return 1; }
-	
+
+	[[ -z "$pattern" ]] && {
+		echo "Pattern required" >&2
+		return 1
+	}
+	[[ -z "$join_col" ]] && {
+		echo "Join column required" >&2
+		return 1
+	}
+
 	local temp_db=$(mktemp --suffix=.db)
 	trap "rm -f $temp_db" EXIT
-	
+
 	# Load all CSVs into temp table
 	sqlite3 "$temp_db" <<SQL
 .mode csv
 .import '|cat $pattern' data
 SQL
-	
-	local cols=$(sqlite3 "$temp_db" "PRAGMA table_info(data);" | \
-		awk -F'|' -v j="$join_col" '$2 != j {printf "MAX(\"%s\") as \"%s\",", $2, $2}' | \
+
+	local cols=$(sqlite3 "$temp_db" "PRAGMA table_info(data);" |
+		awk -F'|' -v j="$join_col" '$2 != j {printf "MAX(\"%s\") as \"%s\",", $2, $2}' |
 		sed 's/,$//')
-	
+
 	local query="SELECT $cols, \"$join_col\" FROM data GROUP BY \"$join_col\";"
-	
+
 	if [[ -n "$output" ]]; then
-		sqlite3 -header -csv "$temp_db" "$query" > "$output"
+		sqlite3 -header -csv "$temp_db" "$query" >"$output"
 	else
 		sqlite3 -header -csv "$temp_db" "$query"
 	fi
@@ -46,42 +64,84 @@ SQL
 csv.col.split() {
 	local input output="" col sep left_name right_name
 	local keep_orig=false delim_to="" split_from="left" occurrence=1
-	
+
 	while [[ $# -gt 0 ]]; do
 		case $1 in
-			-i|--input) input="$2"; shift 2 ;;
-			-o|--output) output="$2"; shift 2 ;;
-			-c|--column) col="$2"; shift 2 ;;
-			-s|--separator) sep="$2"; shift 2 ;;
-			-l|--left-name) left_name="$2"; shift 2 ;;
-			-r|--right-name) right_name="$2"; shift 2 ;;
-			-k|--keep-original) keep_orig=true; shift ;;
-			-d|--delimiter-to) delim_to="$2"; shift 2 ;; 
-			-f|--from) split_from="$2"; shift 2 ;; 
-			-n|--occurrence) occurrence="$2"; shift 2 ;;
-			*) echo "Unknown: $1" >&2; return 1 ;;
+		-i | --input)
+			input="$2"
+			shift 2
+			;;
+		-o | --output)
+			output="$2"
+			shift 2
+			;;
+		-c | --column)
+			col="$2"
+			shift 2
+			;;
+		-s | --separator)
+			sep="$2"
+			shift 2
+			;;
+		-l | --left-name)
+			left_name="$2"
+			shift 2
+			;;
+		-r | --right-name)
+			right_name="$2"
+			shift 2
+			;;
+		-k | --keep-original)
+			keep_orig=true
+			shift
+			;;
+		-d | --delimiter-to)
+			delim_to="$2"
+			shift 2
+			;;
+		-f | --from)
+			split_from="$2"
+			shift 2
+			;;
+		-n | --occurrence)
+			occurrence="$2"
+			shift 2
+			;;
+		*)
+			echo "Unknown: $1" >&2
+			return 1
+			;;
 		esac
 	done
-	
-	[[ -z "$input" ]] && { echo "Input required" >&2; return 1; }
-	[[ -z "$col" ]] && { echo "Column required" >&2; return 1; }
-	[[ -z "$sep" ]] && { echo "Separator required" >&2; return 1; }
+
+	[[ -z "$input" ]] && {
+		echo "Input required" >&2
+		return 1
+	}
+	[[ -z "$col" ]] && {
+		echo "Column required" >&2
+		return 1
+	}
+	[[ -z "$sep" ]] && {
+		echo "Separator required" >&2
+		return 1
+	}
 	[[ -z "$left_name" ]] && left_name="${col}_left"
 	[[ -z "$right_name" ]] && right_name="${col}_right"
 	[[ -z "$delim_to" ]] && delim_to="none"
-	
+
 	local temp_db=$(mktemp --suffix=.db)
 	trap "rm -f $temp_db" EXIT
-	
+
 	# 1. Import CSV to SQLite
 	sqlite3 "$temp_db" <<SQL
 .mode csv
 .import '$input' data
 SQL
-	
+
 	# 2. Build Expressions
 	local left_expr right_expr delim_expr="" pos_expr
-	
+
 	if [[ "$split_from" == "right" ]]; then
 		# Logic: Find last separator by Reversing string, finding first separator, then calculating index
 		# NOTE: This relies on the pipe character '|' not being in your data.
@@ -89,35 +149,35 @@ SQL
 	else
 		pos_expr="INSTR(\"$col\", '$sep')"
 	fi
-	
+
 	case "$delim_to" in
-		none)
-			left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
-			right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
-			;;
-		left)
-			left_expr="SUBSTR(\"$col\", 1, $pos_expr + LENGTH('$sep') - 1)"
-			right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
-			;;
-		right)
-			left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
-			right_expr="SUBSTR(\"$col\", $pos_expr)"
-			;;
-		both)
-			left_expr="SUBSTR(\"$col\", 1, $pos_expr + LENGTH('$sep') - 1)"
-			right_expr="SUBSTR(\"$col\", $pos_expr)"
-			;;
-		separate)
-			left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
-			right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
-			delim_expr=", '$sep' as \"${col}_delim\""
-			;;
+	none)
+		left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
+		right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
+		;;
+	left)
+		left_expr="SUBSTR(\"$col\", 1, $pos_expr + LENGTH('$sep') - 1)"
+		right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
+		;;
+	right)
+		left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
+		right_expr="SUBSTR(\"$col\", $pos_expr)"
+		;;
+	both)
+		left_expr="SUBSTR(\"$col\", 1, $pos_expr + LENGTH('$sep') - 1)"
+		right_expr="SUBSTR(\"$col\", $pos_expr)"
+		;;
+	separate)
+		left_expr="SUBSTR(\"$col\", 1, $pos_expr - 1)"
+		right_expr="SUBSTR(\"$col\", $pos_expr + LENGTH('$sep'))"
+		delim_expr=", '$sep' as \"${col}_delim\""
+		;;
 	esac
-	
+
 	# 3. Build Column List
 	local select_cols=""
 	local cols=$(sqlite3 "$temp_db" "PRAGMA table_info(data);" | awk -F'|' '{print $2}')
-	
+
 	while IFS= read -r c; do
 		if [[ "$c" == "$col" ]]; then
 			if $keep_orig; then
@@ -127,11 +187,11 @@ SQL
 		else
 			select_cols+="\"$c\", "
 		fi
-	done <<< "$cols"
+	done <<<"$cols"
 	select_cols=${select_cols%, }
-	
+
 	local query="SELECT $select_cols FROM data;"
-	
+
 	# 4. Execute
 	# Helper to run query via Python (for REVERSE support) or SQLite directly
 	run_query() {
@@ -158,7 +218,7 @@ writer.writerows(cursor)
 	}
 
 	if [[ -n "$output" ]]; then
-		run_query > "$output"
+		run_query >"$output"
 	else
 		run_query
 	fi
@@ -170,19 +230,40 @@ writer.writerows(cursor)
 
 csv.row.template() {
 	local input output="" template="" sep=","
-	
+
 	while [[ $# -gt 0 ]]; do
 		case $1 in
-			-i|--input) input="$2"; shift 2 ;;
-			-o|--output) output="$2"; shift 2 ;;
-			-t|--template) template="$2"; shift 2 ;;
-			-s|--separator) sep="$2"; shift 2 ;;
-			*) echo "Unknown argument: $1" >&2; return 1 ;;
+		-i | --input)
+			input="$2"
+			shift 2
+			;;
+		-o | --output)
+			output="$2"
+			shift 2
+			;;
+		-t | --template)
+			template="$2"
+			shift 2
+			;;
+		-s | --separator)
+			sep="$2"
+			shift 2
+			;;
+		*)
+			echo "Unknown argument: $1" >&2
+			return 1
+			;;
 		esac
 	done
 
-	[[ -z "$input" ]] && { echo "Input file required (-i)" >&2; return 1; }
-	[[ -z "$template" ]] && { echo "Template string required (-t)" >&2; return 1; }
+	[[ -z "$input" ]] && {
+		echo "Input file required (-i)" >&2
+		return 1
+	}
+	[[ -z "$template" ]] && {
+		echo "Template string required (-t)" >&2
+		return 1
+	}
 
 	local expanded_template
 	printf -v expanded_template "%b" "$template"
@@ -205,7 +286,7 @@ pattern = re.compile(r"\{\{\.(.*?)\}\}")
 try:
 	with open(input_file, mode="r", encoding="utf-8-sig", newline="") as f:
 		reader = csv.DictReader(f, delimiter=delimiter)
-		
+
 		for i, row in enumerate(reader):
 			def replace_match(match):
 				col_name = match.group(1)
@@ -226,7 +307,7 @@ except Exception as e:
 '
 
 	if [[ -n "$output" ]]; then
-		python3 -c "$script" > "$output"
+		python3 -c "$script" >"$output"
 	else
 		python3 -c "$script"
 	fi

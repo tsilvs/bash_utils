@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/bashlib.sh"
 source "${SCRIPT_DIR}/lib/cli.sh"
 
@@ -17,8 +17,8 @@ diff.right() {
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-			-h|--help)
-				cat <<-EOF
+		-h | --help)
+			cat <<-EOF
 				Usage: ${FUNCNAME[0]} [OPTIONS] LEFT RIGHT
 				Show only right-file changes.
 
@@ -29,30 +29,45 @@ diff.right() {
 
 				Example:
 				  ${FUNCNAME[0]} -L a.txt -R b.txt
-				EOF
-				return 0
-				;;
-			-L|--file_left)
-				[[ -n "$2" ]] || { echo "Error: --file_left requires argument" >&2; return 1; }
-				file_left="$2"
-				shift 2
-				;;
-			-R|--file_right)
-				[[ -n "$2" ]] || { echo "Error: --file_right requires argument" >&2; return 1; }
-				file_right="$2"
-				shift 2
-				;;
-			*)
-				[[ $# -ge 2 ]] || { echo "Error: require LEFT RIGHT" >&2; return 1; }
-				file_left="$1"
-				file_right="$2"
-				shift 2
-				;;
+			EOF
+			return 0
+			;;
+		-L | --file_left)
+			[[ -n "$2" ]] || {
+				echo "Error: --file_left requires argument" >&2
+				return 1
+			}
+			file_left="$2"
+			shift 2
+			;;
+		-R | --file_right)
+			[[ -n "$2" ]] || {
+				echo "Error: --file_right requires argument" >&2
+				return 1
+			}
+			file_right="$2"
+			shift 2
+			;;
+		*)
+			[[ $# -ge 2 ]] || {
+				echo "Error: require LEFT RIGHT" >&2
+				return 1
+			}
+			file_left="$1"
+			file_right="$2"
+			shift 2
+			;;
 		esac
 	done
 
-	[[ -z "$file_left" ]]  && { echo "Error: Left file not specified." >&2; return 1; }
-	[[ -z "$file_right" ]] && { echo "Error: Right file not specified." >&2; return 1; }
+	[[ -z "$file_left" ]] && {
+		echo "Error: Left file not specified." >&2
+		return 1
+	}
+	[[ -z "$file_right" ]] && {
+		echo "Error: Right file not specified." >&2
+		return 1
+	}
 
 	diff \
 		--unchanged-line-format= \
