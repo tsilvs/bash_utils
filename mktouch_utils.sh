@@ -189,7 +189,7 @@ Presets:
 	}
 
 	((debug)) && {
-		echo "Debug: SCRIPT_DIR="${SCRIPT_DIR}"
+		echo "Debug: SCRIPT_DIR=${SCRIPT_DIR}"
 		echo "Debug: Config paths:"
 		for p in "${MKT_PRESET_PATHS[@]}"; do
 			local exists="missing"
