@@ -535,16 +535,20 @@ Examples:
 		return 1
 	}
 
-	local dir
-	dir=$(jq -r --arg n "$name" \
+	local -a matches
+	mapfile -t matches < <(jq -r --arg n "$name" \
 		'.profile.info_cache | to_entries[] | select(.value.name == $n) | .key' \
-		"$local_state" | head -1)
+		"$local_state")
 
-	[[ -z "$dir" ]] && {
+	[[ ${#matches[@]} -eq 0 ]] && {
 		echo "Error: profile not found: $name" >&2
 		return 1
 	}
-	printf '%s\n' "$config_dir/$dir"
+	[[ ${#matches[@]} -gt 1 ]] && {
+		echo "Error: ambiguous name '$name' matches: ${matches[*]}" >&2
+		return 1
+	}
+	printf '%s\n' "$config_dir/${matches[0]}"
 }
 
 # ── chromium.profile.ls option metadata ───────────────────────────────────────
@@ -616,12 +620,12 @@ Examples:
 	}
 
 	local -a entries
-	mapfile -t entries < <(jq -r '.profile.info_cache | to_entries[] | "\(.key)\t\(.value.name)"' "$local_state")
+	mapfile -t entries < <(jq -r '.profile.info_cache | to_entries[] | "\(.value.name)\t\(.key)"' "$local_state" | sort)
 
-	local max=0 entry key
+	local max=0 entry name
 	for entry in "${entries[@]}"; do
-		key="${entry%%$'\t'*}"
-		((${#key} > max)) && max=${#key}
+		name="${entry%%$'\t'*}"
+		((${#name} > max)) && max=${#name}
 	done
 	local width=$((max + 3))
 
@@ -991,7 +995,7 @@ Examples:
 		}
 	fi
 
-	printf 'Copied: %s → %s (%s)\n' "$src_name" "$new_name" "$dst_dir"
+	printf 'Copied: %s → %s\n%s\n' "$src_name" "$new_name" "$dst_dir"
 }
 
 # ── chromium.profile.update option metadata ───────────────────────────────────
