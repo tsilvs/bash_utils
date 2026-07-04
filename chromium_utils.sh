@@ -1101,6 +1101,136 @@ Examples:
 	fi
 }
 
+# ── chromium.profile.rename-dir option metadata ───────────────────────────────
+#                                                    0          1      2     3
+_CHROMIUM_PROFILE_RENAME_DIR_OPTS_SHORT=(-b -t -n -h)
+_CHROMIUM_PROFILE_RENAME_DIR_OPTS_LONG=(--browser --type --dry-run --help)
+_CHROMIUM_PROFILE_RENAME_DIR_OPTS_ARG=("BROWSER" "native|flatpak" "" "")
+_CHROMIUM_PROFILE_RENAME_DIR_OPTS_DESC=(
+	"Browser binary name (default: chromium)"
+	"Installation type: native or flatpak (default: native)"
+	"Print actions without executing"
+	"Show help"
+)
+
+# chromium.profile.rename-dir: rename profile dir to 'Profile <display-name>'
+# Updates Local State info_cache key to match new dir name
+chromium.profile.rename-dir() {
+	dep_check jq || return $?
+
+	local fn="${FUNCNAME[0]}"
+	local usage_opts="" i
+	for ((i = 0; i < ${#_CHROMIUM_PROFILE_RENAME_DIR_OPTS_SHORT[@]}; i++)); do
+		local sig="${_CHROMIUM_PROFILE_RENAME_DIR_OPTS_SHORT[$i]}, ${_CHROMIUM_PROFILE_RENAME_DIR_OPTS_LONG[$i]}${_CHROMIUM_PROFILE_RENAME_DIR_OPTS_ARG[$i]:+ ${_CHROMIUM_PROFILE_RENAME_DIR_OPTS_ARG[$i]}}"
+		local line
+		printf -v line '\t%-32s%s\n' "$sig" "${_CHROMIUM_PROFILE_RENAME_DIR_OPTS_DESC[$i]}"
+		usage_opts+="$line"
+	done
+	local usage="Usage: $fn [OPTIONS] PROFILE
+Rename profile directory to 'Profile <display-name>'.
+Updates Local State info_cache key to reflect new dir name.
+
+PROFILE: dir name or display name (resolved via chromium.profile.path).
+
+Options:
+$usage_opts
+Examples:
+	$fn 'Profile 3'
+	$fn metagamer
+	$fn --dry-run 'Profile 15'"
+
+	local browser="chromium" type="native" dryrun=0 showhelp=0
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		-h | --help)
+			showhelp=1
+			shift
+			;;
+		-b | --browser)
+			browser="$2"
+			shift 2
+			;;
+		-t | --type)
+			type="$2"
+			shift 2
+			;;
+		-n | --dry-run)
+			dryrun=1
+			shift
+			;;
+		*) break ;;
+		esac
+	done
+
+	((showhelp)) && {
+		printf '%s\n' "$usage"
+		return 0
+	}
+
+	local profile="${1:-}"
+	[[ -z "$profile" ]] && {
+		echo "Error: PROFILE required" >&2
+		return 1
+	}
+
+	eval "$(dry_run_wrapper)"
+
+	local config_dir
+	config_dir="$(chromium.config.path -b "$browser" -t "$type")" || return 1
+
+	local profile_path
+	profile_path="$(chromium.profile.path -b "$browser" -t "$type" "$profile")" || return 1
+
+	local old_dir_name="${profile_path##*/}"
+	local local_state="$config_dir/Local State"
+
+	[[ ! -f "$local_state" ]] && {
+		echo "Error: Local State not found: $local_state" >&2
+		return 1
+	}
+
+	local display_name
+	display_name="$(jq -r --arg d "$old_dir_name" '.profile.info_cache[$d].name // empty' "$local_state")"
+	[[ -z "$display_name" ]] && {
+		echo "Error: no display name in Local State for $old_dir_name" >&2
+		return 1
+	}
+
+	# Sanitize: replace slashes, trim whitespace
+	local sanitized="${display_name//\//-}"
+	sanitized="${sanitized#"${sanitized%%[![:space:]]*}"}"
+	sanitized="${sanitized%"${sanitized##*[![:space:]]}"}"
+	local new_dir_name="Profile $sanitized"
+
+	if [[ "$old_dir_name" == "$new_dir_name" ]]; then
+		echo "Already named correctly: $old_dir_name"
+		return 0
+	fi
+
+	local new_dir="$config_dir/$new_dir_name"
+	[[ -d "$new_dir" ]] && {
+		echo "Error: target already exists: $new_dir" >&2
+		return 1
+	}
+
+	run_cmd mv "$profile_path" "$new_dir" || return 1
+
+	if ((dryrun)); then
+		echo "DRY-RUN: rename key $old_dir_name → $new_dir_name in Local State"
+	else
+		local tmp
+		tmp="$(mktemp)" || return 1
+		jq --arg old "$old_dir_name" --arg new "$new_dir_name" \
+			'.profile.info_cache[$new] = .profile.info_cache[$old] | del(.profile.info_cache[$old])' \
+			"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
+			rm -f "$tmp"
+			return 1
+		}
+	fi
+
+	printf 'Renamed: %s → %s (%s)\n' "$old_dir_name" "$new_dir_name" "$display_name"
+}
+
 # ── chromium.profile.delete option metadata ───────────────────────────────────
 #                                                0          1      2       3     4
 _CHROMIUM_PROFILE_DELETE_OPTS_SHORT=(-b -t -f -n -h)
@@ -1327,7 +1457,7 @@ export -f chromium.search.keywords chromium.search.engines chromium.ext.ls \
 	chromium.config.path \
 	chromium.profile.name chromium.profile.path chromium.profile.ls \
 	chromium.profile.read chromium.profile.create chromium.profile.copy \
-	chromium.profile.update chromium.profile.delete chromium.profile.close-tabs
+	chromium.profile.update chromium.profile.rename-dir chromium.profile.delete chromium.profile.close-tabs
 
 _chromium.search.keywords_complete() {
 	local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -1358,5 +1488,6 @@ register_completion "chromium.profile.read" "_CHROMIUM_PROFILE_READ"
 register_completion "chromium.profile.create" "_CHROMIUM_PROFILE_CREATE"
 register_completion "chromium.profile.copy" "_CHROMIUM_PROFILE_COPY"
 register_completion "chromium.profile.update" "_CHROMIUM_PROFILE_UPDATE"
+register_completion "chromium.profile.rename-dir" "_CHROMIUM_PROFILE_RENAME_DIR"
 register_completion "chromium.profile.delete" "_CHROMIUM_PROFILE_DELETE"
 register_completion "chromium.profile.close-tabs" "_CHROMIUM_PROFILE_CLOSE_TABS"
