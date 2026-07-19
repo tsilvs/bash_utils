@@ -563,7 +563,7 @@ _CHROMIUM_PROFILE_LS_OPTS_DESC=(
 )
 
 # chromium.profile.ls: list all profiles with display names from Local State
-# Output: <dir_name> TAB <display_name>
+# Output columns: DISPLAY_NAME  DIR_NAME  SIZE (human-readable, via du -sh)
 chromium.profile.ls() {
 	dep_check jq || return $?
 
@@ -578,7 +578,7 @@ chromium.profile.ls() {
 	local usage="Usage: $fn [OPTIONS]
 List all browser profiles by display name (reads Local State).
 
-Output columns: DIR_NAME<TAB>DISPLAY_NAME
+Output columns: DISPLAY_NAME  DIR_NAME  SIZE
 
 Options:
 $usage_opts
@@ -622,7 +622,7 @@ Examples:
 	local -a entries
 	mapfile -t entries < <(jq -r '.profile.info_cache | to_entries[] | "\(.value.name)\t\(.key)"' "$local_state" | sort)
 
-	local max=0 entry name
+	local max=0 entry name dir size
 	for entry in "${entries[@]}"; do
 		name="${entry%%$'\t'*}"
 		((${#name} > max)) && max=${#name}
@@ -630,7 +630,11 @@ Examples:
 	local width=$((max + 3))
 
 	for entry in "${entries[@]}"; do
-		printf "%-${width}s%s\n" "${entry%%$'\t'*}" "${entry#*$'\t'}"
+		name="${entry%%$'\t'*}"
+		dir="${entry#*$'\t'}"
+		size="$(du -sh "$config_dir/$dir" 2>/dev/null | cut -f1)"
+		[[ -z "$size" ]] && size="-"
+		printf "%-${width}s%-12s %s\n" "$name" "$dir" "$size"
 	done
 }
 
@@ -822,38 +826,65 @@ Examples:
 		echo "Error: Local State not found: $local_state — profile dir created but not registered" >&2
 		return 1
 	}
-	if ((dryrun)); then
-		echo "DRY-RUN: register $dir_name in Local State"
-	else
-		local tmp
-		tmp="$(mktemp)" || return 1
-		jq --arg d "$dir_name" --arg n "$display_name" \
-			'.profile.info_cache[$d] = {name: $n}' \
-			"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
-			rm -f "$tmp"
-			return 1
-		}
-	fi
+	local ic_args=(-b "$browser" -t "$type")
+	((dryrun)) && ic_args+=(-n)
+	chromium.profile.info-cache "${ic_args[@]}" "$dir_name" "$display_name" || return 1
 
 	printf 'Created: %s (%s)\n' "$display_name" "$profile_dir"
 }
 
-# ── chromium.profile.copy option metadata ─────────────────────────────────────
-#                                              0          1      2          3     4          5
-_CHROMIUM_PROFILE_COPY_OPTS_SHORT=(-b -t -s -k -n -h)
-_CHROMIUM_PROFILE_COPY_OPTS_LONG=(--browser --type --suffix --keep-sessions --dry-run --help)
-_CHROMIUM_PROFILE_COPY_OPTS_ARG=("BROWSER" "native|flatpak" "SUFFIX" "" "" "")
+# ── chromium.profile.copy path-based link rules ───────────────────────────────
+# Deny takes precedence over allow. Patterns are bash glob, matched against the
+# path relative to the profile root (e.g. "Cache/f_00001", "Network/Cookies").
+# Deny: known mutable state (SQLite DBs, LevelDB internals, prefs/session state)
+# that Chromium may rewrite in place — hardlinking these would let a write to
+# either profile corrupt both.
+_CHROMIUM_PROFILE_COPY_DENY_PATTERNS=(
+	"History" "History-journal" "History Provider Cache"
+	"Cookies" "Cookies-journal"
+	"Web Data" "Web Data-journal"
+	"Login Data" "Login Data-journal"
+	"Preferences" "Secure Preferences" "Bookmarks" "Bookmarks.bak"
+	"Network/*"
+	"Sessions/*"
+	"Extension State/*" "Local Storage/*" "Session Storage/*"
+	"*.ldb" "*.log" "LOCK" "CURRENT" "MANIFEST-*" "*-journal"
+)
+# Allow: content-addressed / regenerable cache dirs — safe to hardlink since
+# Chromium writes new files here rather than mutating existing ones in place.
+_CHROMIUM_PROFILE_COPY_LINK_PATTERNS=(
+	"Cache/*" "Cache/*/*"
+	"Code Cache/*" "Code Cache/*/*"
+	"GPUCache/*"
+	"Media Cache/*"
+	"Service Worker/CacheStorage/*" "Service Worker/CacheStorage/*/*"
+	"Service Worker/ScriptCache/*" "Service Worker/ScriptCache/*/*"
+	"blob_storage/*"
+	"Shared Dictionary/*"
+)
+
+# chromium.profile.copy: copy a profile to next available Profile N slot
+# option metadata ───────────────────────────────────────────────────────────
+#                                              0          1      2      3     4          5             6
+_CHROMIUM_PROFILE_COPY_OPTS_SHORT=(-b -t -s -k -n -p -h)
+_CHROMIUM_PROFILE_COPY_OPTS_LONG=(--browser --type --suffix --keep-sessions --dry-run --link-pattern --help)
+_CHROMIUM_PROFILE_COPY_OPTS_ARG=("BROWSER" "native|flatpak" "SUFFIX" "" "" "GLOB" "")
 _CHROMIUM_PROFILE_COPY_OPTS_DESC=(
 	"Browser binary name (default: chromium)"
 	"Installation type: native or flatpak (default: native)"
 	"Display name suffix for copy (default: ' (Copy)')"
 	"Keep Sessions/ files in copy (default: delete them)"
 	"Print actions without executing"
+	"Additional path glob (relative to profile root) to hardlink instead of copy; repeatable"
 	"Show help"
 )
 
 # chromium.profile.copy: copy a profile to next available Profile N slot
-# Updates display name in Preferences with suffix; resets exit state to clean
+# Path-rule-based hardlinking: files matching _CHROMIUM_PROFILE_COPY_LINK_PATTERNS
+# (cache/regenerable dirs) are hardlinked to save disk; everything else is copied.
+# _CHROMIUM_PROFILE_COPY_DENY_PATTERNS (mutable DB/state files) always copied,
+# overriding any allow match or -p/--link-pattern. Updates display name in
+# Preferences with suffix; resets exit state to clean.
 chromium.profile.copy() {
 	dep_check jq || return $?
 
@@ -878,9 +909,14 @@ Examples:
 	$fn Default
 	$fn Work
 	$fn --suffix ' (Backup)' Default
-	$fn -b google-chrome 'Profile 3'"
+	$fn -b google-chrome 'Profile 3'
+	$fn -p 'IndexedDB/*/*.blob' Default   # add extra path to hardlink
+
+Hardlinked by default: ${_CHROMIUM_PROFILE_COPY_LINK_PATTERNS[*]}
+Always copied (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}"
 
 	local browser="chromium" type="native" suffix=" (Copy)" keep_sessions=0 dryrun=0 showhelp=0
+	local -a extra_link_patterns=()
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 		-h | --help)
@@ -906,6 +942,10 @@ Examples:
 		-n | --dry-run)
 			dryrun=1
 			shift
+			;;
+		-p | --link-pattern)
+			extra_link_patterns+=("$2")
+			shift 2
 			;;
 		*) break ;;
 		esac
@@ -942,7 +982,45 @@ Examples:
 	while [[ -d "$config_dir/Profile $n" ]]; do ((n++)); done
 	local dst_dir="$config_dir/Profile $n"
 
-	run_cmd cp -r "$src_path" "$dst_dir" || return 1
+	# Path-rule-based hardlink: deny patterns always copy (mutable state);
+	# allow patterns (+ -p extras) hardlink; unmatched paths default to copy.
+	local f rel dst_f pat is_link linked=0 copied=0
+	if ((dryrun)); then
+		echo "DRY-RUN: mkdir -p $dst_dir"
+		echo "DRY-RUN: hardlink paths matching allow rules, copy the rest"
+	else
+		mkdir -p "$dst_dir" || return 1
+		# Recreate directory tree
+		(cd "$src_path" && find . -type d -exec mkdir -p -- "$dst_dir/{}" \;) || return 1
+		while IFS= read -r -d '' f; do
+			rel="${f#"$src_path"/}"
+			dst_f="$dst_dir/$rel"
+
+			local denied=0
+			for pat in "${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[@]}"; do
+				[[ "$rel" == $pat ]] && {
+					denied=1
+					break
+				}
+			done
+			is_link=0
+			if ((!denied)); then
+				for pat in "${_CHROMIUM_PROFILE_COPY_LINK_PATTERNS[@]}" "${extra_link_patterns[@]}"; do
+					[[ "$rel" == $pat ]] && {
+						is_link=1
+						break
+					}
+				done
+			fi
+
+			if ((is_link)) && ln -- "$f" "$dst_f" 2>/dev/null; then
+				((linked++))
+			else
+				cp -a -- "$f" "$dst_f" || return 1
+				((copied++))
+			fi
+		done < <(find "$src_path" -type f -print0)
+	fi
 
 	local new_name="${src_name}${suffix}"
 	local prefs="$dst_dir/Preferences"
@@ -982,20 +1060,160 @@ Examples:
 		echo "Error: Local State not found: $local_state — profile dir created but not registered" >&2
 		return 1
 	}
+	local ic_args=(-b "$browser" -t "$type")
+	((dryrun)) && ic_args+=(-n)
+	chromium.profile.info-cache "${ic_args[@]}" "$dst_dir_name" "$new_name" || return 1
+
 	if ((dryrun)); then
-		echo "DRY-RUN: register $dst_dir_name in Local State"
+		printf 'DRY-RUN: would copy %s → %s\n%s\n' "$src_name" "$new_name" "$dst_dir"
 	else
-		local tmp2
-		tmp2="$(mktemp)" || return 1
-		jq --arg d "$dst_dir_name" --arg n "$new_name" \
-			'.profile.info_cache[$d] = {name: $n}' \
-			"$local_state" >"$tmp2" && mv "$tmp2" "$local_state" || {
-			rm -f "$tmp2"
+		printf 'Copied: %s → %s\n%s\nhardlinked=%d copied=%d\n' \
+			"$src_name" "$new_name" "$dst_dir" "$linked" "$copied"
+	fi
+}
+
+# ── chromium.profile.info-cache option metadata ───────────────────────────────
+#                                                     0          1      2              3     4
+_CHROMIUM_PROFILE_INFO_CACHE_OPTS_SHORT=(-b -t -a -n -h)
+_CHROMIUM_PROFILE_INFO_CACHE_OPTS_LONG=(--browser --type --avatar-index --dry-run --help)
+_CHROMIUM_PROFILE_INFO_CACHE_OPTS_ARG=("BROWSER" "native|flatpak" "INDEX" "" "")
+_CHROMIUM_PROFILE_INFO_CACHE_OPTS_DESC=(
+	"Browser binary name (default: chromium)"
+	"Installation type: native or flatpak (default: native)"
+	"Avatar index 0-55 (default: derived from DIR_NAME)"
+	"Print actions without executing"
+	"Show help"
+)
+
+# chromium.profile.info-cache: insert minimal viable profile.info_cache record
+# into Local State. Idempotent: overwrites existing entry for DIR_NAME.
+# Called by chromium.profile.create and chromium.profile.copy.
+# Omits color sentinel values, metrics_bucket_index (Chromium regenerates on
+# first launch). active_time=0 (never active).
+chromium.profile.info-cache() {
+	dep_check jq || return $?
+
+	local fn="${FUNCNAME[0]}"
+	local usage_opts="" i
+	for ((i = 0; i < ${#_CHROMIUM_PROFILE_INFO_CACHE_OPTS_SHORT[@]}; i++)); do
+		local sig="${_CHROMIUM_PROFILE_INFO_CACHE_OPTS_SHORT[$i]}, ${_CHROMIUM_PROFILE_INFO_CACHE_OPTS_LONG[$i]}${_CHROMIUM_PROFILE_INFO_CACHE_OPTS_ARG[$i]:+ ${_CHROMIUM_PROFILE_INFO_CACHE_OPTS_ARG[$i]}}"
+		local line
+		printf -v line '\t%-32s%s\n' "$sig" "${_CHROMIUM_PROFILE_INFO_CACHE_OPTS_DESC[$i]}"
+		usage_opts+="$line"
+	done
+	local usage="Usage: $fn [OPTIONS] DIR_NAME DISPLAY_NAME
+Insert a minimal viable profile.info_cache record into Local State.
+Overwrites existing entry for DIR_NAME (idempotent).
+Avatar index defaults to (N-1) mod 56 when DIR_NAME is 'Profile N', else 0.
+
+DIR_NAME: profile directory name (e.g. 'Profile 3', 'Default')
+DISPLAY_NAME: display name shown in profile picker
+
+Options:
+$usage_opts
+Examples:
+	$fn 'Profile 3' 'Work'
+	$fn -b google-chrome 'Default' 'Personal'
+	$fn -a 5 'Profile 4' 'Dev'
+	$fn --dry-run 'Profile 2' 'Test'"
+
+	local browser="chromium" type="native" avatar_idx="" dryrun=0 showhelp=0
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		-h | --help)
+			showhelp=1
+			shift
+			;;
+		-b | --browser)
+			browser="$2"
+			shift 2
+			;;
+		-t | --type)
+			type="$2"
+			shift 2
+			;;
+		-a | --avatar-index)
+			avatar_idx="$2"
+			shift 2
+			;;
+		-n | --dry-run)
+			dryrun=1
+			shift
+			;;
+		*) break ;;
+		esac
+	done
+
+	((showhelp)) && {
+		printf '%s\n' "$usage"
+		return 0
+	}
+
+	local dir_name="${1:-}"
+	local display_name="${2:-}"
+	[[ -z "$dir_name" ]] && {
+		echo "Error: DIR_NAME required" >&2
+		return 1
+	}
+	[[ -z "$display_name" ]] && {
+		echo "Error: DISPLAY_NAME required" >&2
+		return 1
+	}
+
+	# Derive avatar index from DIR_NAME when not specified
+	if [[ -z "$avatar_idx" ]]; then
+		if [[ "$dir_name" =~ ^Profile\ ([0-9]+)$ ]]; then
+			avatar_idx=$(((BASH_REMATCH[1] - 1) % 56))
+		else
+			avatar_idx=0
+		fi
+	fi
+	# Clamp to 0-55 (Chromium built-in avatars: IDR_PROFILE_AVATAR_0..55)
+	((avatar_idx < 0 || avatar_idx > 55)) && avatar_idx=0
+	local avatar_icon
+	printf -v avatar_icon 'chrome://theme/IDR_PROFILE_AVATAR_%02d' "$avatar_idx"
+
+	eval "$(dry_run_wrapper)"
+
+	local config_dir
+	config_dir="$(chromium.config.path -b "$browser" -t "$type")" || return 1
+	local local_state="$config_dir/Local State"
+	[[ ! -f "$local_state" ]] && {
+		echo "Error: Local State not found: $local_state" >&2
+		return 1
+	}
+
+	if ((dryrun)); then
+		echo "DRY-RUN: insert .profile.info_cache[\"$dir_name\"] (name=$display_name avatar=$avatar_icon)"
+	else
+		local tmp
+		tmp="$(mktemp)" || return 1
+		jq --arg d "$dir_name" --arg n "$display_name" --arg a "$avatar_icon" \
+			'.profile.info_cache[$d] = {
+				is_managed: 0,
+				gaia_given_name: "",
+				gaia_name: "",
+				use_gaia_picture: false,
+				force_signin_profile_locked: false,
+				is_consented_primary_account: false,
+				is_ephemeral: false,
+				is_glic_eligible: false,
+				enterprise_label: "",
+				hosted_domain: "",
+				managed_user_id: "",
+				name: $n,
+				is_using_default_name: false,
+				is_using_default_avatar: false,
+				avatar_icon: $a,
+				active_time: 0
+			}' \
+			"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
+			rm -f "$tmp"
 			return 1
 		}
 	fi
 
-	printf 'Copied: %s → %s\n%s\n' "$src_name" "$new_name" "$dst_dir"
+	printf 'Registered: %s (%s) in %s\n' "$dir_name" "$display_name" "$local_state"
 }
 
 # ── chromium.profile.update option metadata ───────────────────────────────────
@@ -1456,7 +1674,7 @@ Examples:
 export -f chromium.search.keywords chromium.search.engines chromium.ext.ls \
 	chromium.config.path \
 	chromium.profile.name chromium.profile.path chromium.profile.ls \
-	chromium.profile.read chromium.profile.create chromium.profile.copy \
+	chromium.profile.read chromium.profile.create chromium.profile.copy chromium.profile.info-cache \
 	chromium.profile.update chromium.profile.rename-dir chromium.profile.delete chromium.profile.close-tabs
 
 _chromium.search.keywords_complete() {
@@ -1487,6 +1705,7 @@ register_completion "chromium.profile.ls" "_CHROMIUM_PROFILE_LS"
 register_completion "chromium.profile.read" "_CHROMIUM_PROFILE_READ"
 register_completion "chromium.profile.create" "_CHROMIUM_PROFILE_CREATE"
 register_completion "chromium.profile.copy" "_CHROMIUM_PROFILE_COPY"
+register_completion "chromium.profile.info-cache" "_CHROMIUM_PROFILE_INFO_CACHE"
 register_completion "chromium.profile.update" "_CHROMIUM_PROFILE_UPDATE"
 register_completion "chromium.profile.rename-dir" "_CHROMIUM_PROFILE_RENAME_DIR"
 register_completion "chromium.profile.delete" "_CHROMIUM_PROFILE_DELETE"
