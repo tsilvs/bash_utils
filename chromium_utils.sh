@@ -1186,6 +1186,10 @@ Examples:
 	if ((dryrun)); then
 		echo "DRY-RUN: insert .profile.info_cache[\"$dir_name\"] (name=$display_name avatar=$avatar_icon)"
 	else
+		[[ ! -w "$local_state" ]] && {
+			echo "Error: Local State not writable: $local_state" >&2
+			return 1
+		}
 		local tmp
 		tmp="$(mktemp)" || return 1
 		jq --arg d "$dir_name" --arg n "$display_name" --arg a "$avatar_icon" \
@@ -1436,6 +1440,10 @@ Examples:
 	if ((dryrun)); then
 		echo "DRY-RUN: rename key $old_dir_name → $new_dir_name in Local State"
 	else
+		[[ ! -w "$local_state" ]] && {
+			echo "Error: Local State not writable: $local_state" >&2
+			return 1
+		}
 		local tmp
 		tmp="$(mktemp)" || return 1
 		jq --arg old "$old_dir_name" --arg new "$new_dir_name" \
@@ -1546,10 +1554,17 @@ Examples:
 		if ((dryrun)); then
 			echo "DRY-RUN: remove .profile.info_cache[\"$dir_name\"] from Local State"
 		else
+			[[ ! -w "$local_state" ]] && {
+				echo "Error: Local State not writable: $local_state" >&2
+				return 1
+			}
 			local tmp
 			tmp="$(mktemp)" || return 1
 			jq --arg d "$dir_name" 'del(.profile.info_cache[$d])' \
-				"$local_state" >"$tmp" && mv "$tmp" "$local_state" || rm -f "$tmp"
+				"$local_state" >"$tmp" && mv "$tmp" "$local_state" || {
+				rm -f "$tmp"
+				return 1
+			}
 		fi
 	fi
 
