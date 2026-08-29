@@ -9,6 +9,6 @@ oapigen.() {
 		-v "$(pwd)":/home/ubuntu/pwd:Z \
 		openapitools/openapi-generator-cli \
 		-- \
-		bash -c "cd /home/ubuntu/pwd; docker-entrypoint $@"
+		bash -c "cd /home/ubuntu/pwd; /usr/local/bin/docker-entrypoint.sh $@"
 	return $?
 }
