@@ -3,6 +3,12 @@
 # Podman-packaged CLI tools Alias Functions
 
 oapi-gen-cli.() {
-	podman run -it --rm openapitools/openapi-generator-cli -- docker-entrypoint.sh "$@"
+	podman run \
+		-it \
+		--rm \
+		-v "$(pwd)":/home/ubuntu/pwd \
+		openapitools/openapi-generator-cli \
+		-- \
+		bash -c "cd /home/ubuntu/pwd; docker-entrypoint.sh $@"
 	return $?
 }
