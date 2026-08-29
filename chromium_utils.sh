@@ -850,6 +850,12 @@ _CHROMIUM_PROFILE_COPY_DENY_PATTERNS=(
 	"Extension State/*" "Local Storage/*" "Session Storage/*"
 	"*.ldb" "*.log" "LOCK" "CURRENT" "MANIFEST-*" "*-journal"
 )
+# Skip: fully regenerable state that Chromium rebuilds on demand — never copied
+# nor linked. Service Worker (script + CacheStorage) can reach 1GB+ per profile
+# and is recreated on site revisit; GPU shader caches likewise.
+_CHROMIUM_PROFILE_COPY_SKIP_PATTERNS=(
+	"Service Worker" "Service Worker/*" "Service Worker/*/*" "Service Worker/*/*/*"
+)
 # Allow: content-addressed / regenerable cache dirs — safe to hardlink since
 # Chromium writes new files here rather than mutating existing ones in place.
 _CHROMIUM_PROFILE_COPY_LINK_PATTERNS=(
@@ -857,8 +863,6 @@ _CHROMIUM_PROFILE_COPY_LINK_PATTERNS=(
 	"Code Cache/*" "Code Cache/*/*"
 	"GPUCache/*"
 	"Media Cache/*"
-	"Service Worker/CacheStorage/*" "Service Worker/CacheStorage/*/*"
-	"Service Worker/ScriptCache/*" "Service Worker/ScriptCache/*/*"
 	"blob_storage/*"
 	"Shared Dictionary/*"
 )
@@ -912,8 +916,9 @@ Examples:
 	$fn -b google-chrome 'Profile 3'
 	$fn -p 'IndexedDB/*/*.blob' Default   # add extra path to hardlink
 
+Skipped entirely (regenerable): ${_CHROMIUM_PROFILE_COPY_SKIP_PATTERNS[*]}
 Hardlinked by default: ${_CHROMIUM_PROFILE_COPY_LINK_PATTERNS[*]}
-Always copied (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}"
+Copied via reflink CoW (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}"
 
 	local browser="chromium" type="native" suffix=" (Copy)" keep_sessions=0 dryrun=0 showhelp=0
 	local -a extra_link_patterns=()
@@ -984,17 +989,29 @@ Always copied (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}
 
 	# Path-rule-based hardlink: deny patterns always copy (mutable state);
 	# allow patterns (+ -p extras) hardlink; unmatched paths default to copy.
-	local f rel dst_f pat is_link linked=0 copied=0
+	local f rel dst_f pat is_link linked=0 copied=0 skipped_total=0
 	if ((dryrun)); then
 		echo "DRY-RUN: mkdir -p $dst_dir"
-		echo "DRY-RUN: hardlink paths matching allow rules, copy the rest"
+		echo "DRY-RUN: skip regenerable paths (Service Worker), hardlink allow rules, reflink-copy the rest"
 	else
 		mkdir -p "$dst_dir" || return 1
-		# Recreate directory tree
-		(cd "$src_path" && find . -type d -exec mkdir -p -- "$dst_dir/{}" \;) || return 1
+		# Recreate directory tree (prune skipped subtrees, e.g. Service Worker)
+		(cd "$src_path" && find . -type d -name "Service Worker" -prune -o -type d -exec mkdir -p -- "$dst_dir/{}" \;) || return 1
 		while IFS= read -r -d '' f; do
 			rel="${f#"$src_path"/}"
 			dst_f="$dst_dir/$rel"
+
+			local skipped=0
+			for pat in "${_CHROMIUM_PROFILE_COPY_SKIP_PATTERNS[@]}"; do
+				[[ "$rel" == $pat ]] && {
+					skipped=1
+					break
+				}
+			done
+			((skipped)) && {
+				((skipped_total++))
+				continue
+			}
 
 			local denied=0
 			for pat in "${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[@]}"; do
@@ -1016,7 +1033,9 @@ Always copied (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}
 			if ((is_link)) && ln -- "$f" "$dst_f" 2>/dev/null; then
 				((linked++))
 			else
-				cp -a -- "$f" "$dst_f" || return 1
+				# --reflink=auto: Btrfs/XFS CoW clone (block-level dedup, safe to
+				# diverge on write); falls back to full copy on other filesystems.
+				cp -a --reflink=auto -- "$f" "$dst_f" || return 1
 				((copied++))
 			fi
 		done < <(find "$src_path" -type f -print0)
@@ -1067,8 +1086,8 @@ Always copied (deny overrides allow): ${_CHROMIUM_PROFILE_COPY_DENY_PATTERNS[*]}
 	if ((dryrun)); then
 		printf 'DRY-RUN: would copy %s → %s\n%s\n' "$src_name" "$new_name" "$dst_dir"
 	else
-		printf 'Copied: %s → %s\n%s\nhardlinked=%d copied=%d\n' \
-			"$src_name" "$new_name" "$dst_dir" "$linked" "$copied"
+		printf 'Copied: %s → %s\n%s\nhardlinked=%d copied=%d skipped=%d\n' \
+			"$src_name" "$new_name" "$dst_dir" "$linked" "$copied" "$skipped_total"
 	fi
 }
 
