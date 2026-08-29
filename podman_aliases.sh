@@ -9,6 +9,6 @@ oapi-gen-cli.() {
 		-v "$(pwd)":/home/ubuntu/pwd \
 		openapitools/openapi-generator-cli \
 		-- \
-		bash -c "cd /home/ubuntu/pwd; docker-entrypoint.sh $@"
+		bash -c "cd /home/ubuntu/pwd; docker-entrypoint $@"
 	return $?
 }
